@@ -5,7 +5,7 @@ services:
   backend:
     # build:
     #   context: ./backend
-    image: atiyadocker/wanderlust-backend:${SHA}
+    image: atiyadocker/wanderlust-backend:${SHA:-latest}
     container_name: backend
     ports:
       - "8000:8000"
@@ -43,7 +43,7 @@ services:
   frontend:
     # build:
     #   context: ./frontend
-    image: atiyadocker/wanderlust-frontend:${SHA}
+    image: atiyadocker/wanderlust-frontend:${SHA:-latest}
     container_name: frontend
     ports:
       - "5173:5173"
