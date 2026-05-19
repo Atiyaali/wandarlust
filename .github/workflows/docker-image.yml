@@ -24,8 +24,8 @@ jobs:
         run:  docker push atiyadocker/wanderlust-backend:${{ github.sha }}
       - name: push frontend image
         run:  docker push atiyadocker/wanderlust-frontend:${{ github.sha }}
-  deploy:
-    runs-on: ubuntu-latest
+  # deploy:
+  #   runs-on: ubuntu-latest
 
       
       
