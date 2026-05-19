@@ -3,13 +3,17 @@ version: "3.9"
 services:
 
   backend:
-    build:
-      context: ./backend
+    # build:
+    #   context: ./backend
+    image: atiyadocker/wanderlust-backend:${SHA}
     container_name: backend
     ports:
       - "8000:8000"
-    env_file:
-      - ./backend/.env
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/wanderlust
+      - REDIS_URL=redis://redis:6379
+    # env_file:
+    #   - ./backend/.env
     depends_on:
       - mongodb
       - redis
@@ -37,8 +41,9 @@ services:
       - wanderlust-network
 
   frontend:
-    build:
-      context: ./frontend
+    # build:
+    #   context: ./frontend
+    image: atiyadocker/wanderlust-frontend:${SHA}
     container_name: frontend
     ports:
       - "5173:5173"
@@ -47,14 +52,13 @@ services:
     networks:
       - wanderlust-network
   nginx:
-    image : nginx:latest
+    # build:
+    #   context: ./nginx
+    image: atiyadocker/wanderlust-nginx:${SHA}
     container_name: nginx
     ports:
       - "80:80"
       - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/ssl:/etc/nginx/ssl
     depends_on:
       - frontend  
       - backend
