@@ -60,9 +60,11 @@ jobs:
             password: ${{secrets.SERVER_PASSWORD }}
 
             script: |
-              cd C:\Users\Maaz\Desktop\deploy
-              docker compose pull
-              docker compose up -d
+              powershell -Command "
+              cd 'C:\Users\Maaz\Desktop\deploy';
+              docker compose pull;
+              docker compose up -d --remove-orphans
+              "
           
        
      
