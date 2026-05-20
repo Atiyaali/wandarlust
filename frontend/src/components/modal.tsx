@@ -78,7 +78,7 @@ const ModalComponent: React.FC<ModalProps> = ({
                       setModal(false);
                     }}
                   >
-                    Cancel
+                    cancel
                   </button>
                 </div>
               </div>
