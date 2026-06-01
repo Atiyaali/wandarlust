@@ -64,19 +64,19 @@ jobs:
              docker compose pull
              docker compose up -d --remove-orphans
   create-issue:
-  runs-on: ubuntu-latest
-  needs: [docker, deploy]
-  if: failure()
+    runs-on: ubuntu-latest
+    needs: [docker, deploy]
+    if: failure()
 
-  permissions:
-    issues: write
+    permissions:
+      issues: write
 
-  steps:
-    - name: Create Issue
-      uses: actions/github-script@v7
-      with:
-        script: |
-          await github.rest.issues.create({
+    steps:
+      - name: Create Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+           await github.rest.issues.create({
             owner: context.repo.owner,
             repo: context.repo.repo,
             title: 'CI/CD Pipeline Failed',
@@ -88,4 +88,4 @@ jobs:
             Check logs:
             https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
             `
-          })
+           })
