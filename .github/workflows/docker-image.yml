@@ -63,36 +63,29 @@ jobs:
              cd "C:\Users\Maaz\Desktop\deploy"
              docker compose pull
              docker compose up -d --remove-orphans
-  create-issue-on-failure:
-    runs-on: ubuntu-latest
-    needs: deploy
-    if: failure()
+  create-issue:
+  runs-on: ubuntu-latest
+  needs: [docker, deploy]
+  if: failure()
 
-    permissions:
-      issues: write
+  permissions:
+    issues: write
 
-    steps:
-      - name: Create Issue
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: 'Deployment Failed',
-              body: `
-              Deployment failed.
+  steps:
+    - name: Create Issue
+      uses: actions/github-script@v7
+      with:
+        script: |
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: 'CI/CD Pipeline Failed',
+            body: `
+            Workflow: ${context.workflow}
+            Commit: ${context.sha}
+            Branch: ${context.ref}
 
-              Workflow: ${context.workflow}
-              Commit: ${context.sha}
-              Branch: ${context.ref}
-
-              Check the workflow logs:
-              https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
-              `
-            })  
-            
-       
-     
-      
-      
+            Check logs:
+            https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
+            `
+          })
