@@ -1,1 +1,1 @@
-node --version
+php --version
