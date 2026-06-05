@@ -1,4 +1,3 @@
-CODE_CHANGES = getGitChanges()
 pipeline { 
     agent any
 
@@ -12,7 +11,7 @@ pipeline {
         stage('building') {
             when {
                 expression {
-                    env.BRANCH_NAME == "jenkins_branch" && CODE_CHANGES == true
+                    env.BRANCH_NAME == "jenkins_branch"
                 }
             }
             steps {
@@ -24,7 +23,7 @@ pipeline {
         stage('Build') {
             when {
                 expression {
-                    env.BRANCH_NAME == "main" && CODE_CHANGES == true
+                    env.BRANCH_NAME == "main"
                 }
             }
             steps {
