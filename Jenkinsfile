@@ -2,10 +2,10 @@ CODE_CHANGES = getGitChanges()
 pipeline { 
     agent any
 
-    environment {
-        // Environment variables
+    // environment {
+    //     // Environment variables
         
-    }
+    // }
 
     stages {
 
