@@ -1,10 +1,10 @@
 pipeline { 
     agent any
 
-    // environment {
-    //     // Environment variables
-        
-    // }
+    environment {
+        // Environment variables
+        BRANCH_NAME = 'jenkins_branch'   
+    }
 
     stages {
 
