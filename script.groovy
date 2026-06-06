@@ -1,8 +1,9 @@
 def build(){
-    docker build -t atiyadocker/wandarlustfrontpipeline:latest ./frontend
-    docker build -t atiyadocker/wandarlustbackpipeline:latest ./backend
+    sh 'docker build -t atiyadocker/wandarlustfrontpipeline:latest ./frontend'
+    sh 'docker build -t atiyadocker/wandarlustbackpipeline:latest ./backend'
 }
 def push(){
-    docker push atiyadocker/wandarlustfrontpipeline:latest
-    docker push atiyadocker/wandarlustbackpipeline:latest
+    sh 'docker push atiyadocker/wandarlustfrontpipeline:latest'
+    sh 'docker push atiyadocker/wandarlustbackpipeline:latest'
 }
+return this
