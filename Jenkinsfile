@@ -38,19 +38,7 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            when{
-                expression{
-                    params.executeTest == true
-                }
-            }
-            steps {
-              script{
-                gv.testing()
-                echo "environmental variable from stage deply ${env.variable}"
-              }
-            }
-        }
+    
 
         stage('Deploy') {
             // input {
@@ -76,6 +64,19 @@ pipeline {
                 
                 gv.deploying(env.variable)
                 echo "${env.variable}"
+              }
+            }
+        }
+            stage('Test') {
+            when{
+                expression{
+                    params.executeTest == true
+                }
+            }
+            steps {
+              script{
+                gv.testing()
+                echo "environmental variable from stage deply ${env.variable}"
               }
             }
         }
