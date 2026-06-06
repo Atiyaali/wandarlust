@@ -1,12 +1,8 @@
-def deploying(variable){   
-                echo 'Deploying application...'
-                echo "this is my params for choices ${params.VERSIONCHOICE}" 
-                echo "deploying with ${variable}"    
+def build(){
+    docker build -t atiyadocker/wandarlustfrontpipeline:latest ./frontend
+    docker build -t atiyadocker/wandarlustbackpipeline:latest ./backend
 }
-def testing() {
-      echo 'Running tests...'
+def push(){
+    docker push atiyadocker/wandarlustfrontpipeline:latest
+    docker push atiyadocker/wandarlustbackpipeline:latest
 }
-def building() {
-     echo 'buildind docker from jenkins branch'
-}
-return this
