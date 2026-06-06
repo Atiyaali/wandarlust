@@ -1,6 +1,7 @@
-def deploying(){   
+def deploying($ENV){   
                 echo 'Deploying application...'
-                echo "this is my params for choices ${params.VERSIONCHOICE}"     
+                echo "this is my params for choices ${params.VERSIONCHOICE}" 
+                echo "deploying with ${ENV}"    
 }
 def testing() {
       echo 'Running tests...'

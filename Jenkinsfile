@@ -61,7 +61,7 @@ pipeline {
             }
             steps {
               script{
-                gv.deploying()
+                gv.deploying(ENV)
                 echo "${ENV}"
               }
             }
