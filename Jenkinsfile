@@ -50,7 +50,7 @@ pipeline {
             // }
             steps {
               script{
-               variable = input(
+             def  variable = input(
     message: "select the deploy enviroment",
     ok: "done",
     parameters: [
