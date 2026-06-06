@@ -1,8 +1,8 @@
 pipeline { 
     agent any
-   tools {
-   nodejs "node-26.6"
-   }
+ tools {
+    nodejs "Node"
+}
     environment {
         // Environment variables
         BRANCH_NAME = 'jenkins_branch' 
