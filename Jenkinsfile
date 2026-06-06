@@ -1,7 +1,7 @@
 pipeline { 
     agent any
    tools {
-   node "node-26.6"
+   nodejs "node-26.6"
    }
     environment {
         // Environment variables
