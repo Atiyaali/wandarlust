@@ -47,22 +47,26 @@ pipeline {
             steps {
               script{
                 gv.testing()
+                echo "environmental variable from stage deply ${variable}"
               }
             }
         }
 
         stage('Deploy') {
-            input {
-                message "select the deploy enviroment"
-                ok "done"
-                parameters{
-                     choice(name: 'ENV' , choices : ['dev','staging','producction'] ,  description : 'this is my enviroment choices')
-                }
-            }
+            // input {
+            //     message "select the deploy enviroment"
+            //     ok "done"
+            //     parameters{
+            //          choice(name: 'ENV' , choices : ['dev','staging','producction'] ,  description : 'this is my enviroment choices')
+            //     }
+            // }
             steps {
               script{
-                gv.deploying(ENV)
-                echo "${ENV}"
+                env.variable = input message: "select the deploy enviroment" ,  ok "done" ,  parameters{
+                     choice(name: 'ENV' , choices : ['dev','staging','producction'] ,  description : 'this is my enviroment choices')
+                }
+                gv.deploying(variable)
+                echo "${variable}"
               }
             }
         }
