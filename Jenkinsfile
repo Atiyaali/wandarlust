@@ -76,7 +76,7 @@ pipeline {
             steps {
               script{
                 gv.testing()
-                echo "environmental variable from stage deply ${variable}"
+                echo "environmental variable from stage deply "
               }
             }
         }
