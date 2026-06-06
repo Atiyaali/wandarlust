@@ -50,7 +50,7 @@ pipeline {
             // }
             steps {
               script{
-               env.variable = input(
+               variable = input(
     message: "select the deploy enviroment",
     ok: "done",
     parameters: [
@@ -62,8 +62,8 @@ pipeline {
     ]
 )
                 
-                gv.deploying(env.variable)
-                echo "${env.variable}"
+                gv.deploying(variable)
+                echo "${variable}"
               }
             }
         }
@@ -76,7 +76,7 @@ pipeline {
             steps {
               script{
                 gv.testing()
-                echo "environmental variable from stage deply ${env.variable}"
+                echo "environmental variable from stage deply ${variable}"
               }
             }
         }
