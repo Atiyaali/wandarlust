@@ -1,11 +1,18 @@
 pipeline { 
     agent any
-
+   tools {
+   node "node-26.6"
+   }
     environment {
         // Environment variables
-        BRANCH_NAME = 'jenkins_branch'   
+        BRANCH_NAME = 'jenkins_branch' 
+        // DOCKER_CREDS = credentials("dockerhub_creds")  
     }
-
+  parameters {
+ string (name:'VERSION' , defaultValue: '' , description: 'this is my version')
+ choices (name: 'VERSIONCHOICE' , choices : ['1.0.0','2.0.0','3.0.0'] ,  description : 'this is my version choices')
+ booleanValue (name: 'executeTest' , defaultValue: true , description: 'this is my test will be true or false')
+  }
     stages {
 
         stage('building') {
@@ -20,30 +27,40 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            when {
-                expression {
-                    env.BRANCH_NAME == "main"
-                }
-            }
+        stage('DOCKER LOGIN') {
+          
             steps {
                 echo 'Building from main branch'
-                // sh 'npm install'
-                // sh 'mvn package'
+                // echo 'Login to docker with ${env.DOCKER_CREDS}'
+//              withCredentials([
+//     usernamePassword(
+//         credentialsId: 'dockerhub_creds',
+//         usernameVariable: 'USER',
+//         passwordVariable: 'PWD'
+//     )
+// ]) {
+//     sh 'echo "Username: $USER Password: $PWD"'
+// }
             }
         }
 
         stage('Test') {
+            when{
+                expression{
+                    params.executeTest == true
+                }
+            }
             steps {
                 echo 'Running tests...'
-                // sh 'npm test'
+                echo 'running test'
             }
         }
 
         stage('Deploy') {
             steps {
                 echo 'Deploying application...'
-                // sh 'docker compose up -d'
+                echo "this is my params for choices ${params.VERSIONCHOICE}"
+             
             }
         }
     }
