@@ -1,20 +1,30 @@
+def gv
 pipeline { 
     agent any
+
  tools {
     nodejs "Node"
 }
+
     environment {
-        // Environment variables
         BRANCH_NAME = 'jenkins_branch' 
         // DOCKER_CREDS = credentials("dockerhub_creds")  
     }
+
   parameters {
  string(name:'VERSION' , defaultValue: '' , description: 'this is my version')
  choice(name: 'VERSIONCHOICE' , choices : ['1.0.0','2.0.0','3.0.0'] ,  description : 'this is my version choices')
  booleanParam(name: 'executeTest' , defaultValue: true , description: 'this is my test will be true or false')
   }
-    stages {
 
+    stages {
+        stage('init') {
+   steps {
+    script {
+        gv = load 'script.groovy'
+    }
+   }
+        }
         stage('building') {
             when {
                 expression {
@@ -22,25 +32,9 @@ pipeline {
                 }
             }
             steps {
-                echo 'buildind docker from jenkins branch'
-                // git url: 'https://github.com/user/repo.git'
-            }
-        }
-
-        stage('DOCKER LOGIN') {
-          
-            steps {
-                echo 'Building from main branch'
-                // echo 'Login to docker with ${env.DOCKER_CREDS}'
-//              withCredentials([
-//     usernamePassword(
-//         credentialsId: 'dockerhub_creds',
-//         usernameVariable: 'USER',
-//         passwordVariable: 'PWD'
-//     )
-// ]) {
-//     sh 'echo "Username: $USER Password: $PWD"'
-// }
+               script{
+                gv.building()
+               }
             }
         }
 
@@ -51,16 +45,17 @@ pipeline {
                 }
             }
             steps {
-                echo 'Running tests...'
-                echo 'running test'
+              script{
+                gv.testing()
+              }
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploying application...'
-                echo "this is my params for choices ${params.VERSIONCHOICE}"
-             
+              script{
+                gv.deploying()
+              }
             }
         }
     }
@@ -79,3 +74,22 @@ pipeline {
         }
     }
 }
+
+
+
+//         stage('DOCKER LOGIN') {
+          
+//             steps {
+//                 echo 'Building from main branch'
+//                 // echo 'Login to docker with ${env.DOCKER_CREDS}'
+// //              withCredentials([
+// //     usernamePassword(
+// //         credentialsId: 'dockerhub_creds',
+// //         usernameVariable: 'USER',
+// //         passwordVariable: 'PWD'
+// //     )
+// // ]) {
+// //     sh 'echo "Username: $USER Password: $PWD"'
+// // }
+//             }
+//         }
