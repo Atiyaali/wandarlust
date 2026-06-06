@@ -23,7 +23,7 @@ pipeline {
             steps {
                script{
             withCredentials([
-        usernamePassword(credentialsId: 'dockerhub_creds' , usernameVariable: USER , passwordVariable: PASSWORD )]){
+        usernamePassword(credentialsId: 'dockerhub_creds' , usernameVariable: 'USER' , passwordVariable: 'PASSWORD' )]){
             sh 'echo $PASSWORD | docker login -u $USER --password-stdin'
         }
                gv.push()
