@@ -9,9 +9,9 @@ pipeline {
         // DOCKER_CREDS = credentials("dockerhub_creds")  
     }
   parameters {
- string (name:'VERSION' , defaultValue: '' , description: 'this is my version')
- choices (name: 'VERSIONCHOICE' , choices : ['1.0.0','2.0.0','3.0.0'] ,  description : 'this is my version choices')
- booleanValue (name: 'executeTest' , defaultValue: true , description: 'this is my test will be true or false')
+ string(name:'VERSION' , defaultValue: '' , description: 'this is my version')
+ choice(name: 'VERSIONCHOICE' , choices : ['1.0.0','2.0.0','3.0.0'] ,  description : 'this is my version choices')
+ booleanParam(name: 'executeTest' , defaultValue: true , description: 'this is my test will be true or false')
   }
     stages {
 
