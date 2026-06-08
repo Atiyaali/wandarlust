@@ -1,17 +1,16 @@
-@Library('jenkins_shared_library')
-def gv
+@Library('jenkins_shared_library') _
 pipeline { 
     agent any
 
     stages {
 
-        stage('init') {
-         steps {
-           script {
-             gv = load 'script.groovy'
-                  }
-                }
-                       }
+        // stage('init') {
+        //  steps {
+        //    script {
+        //      gv = load 'script.groovy'
+        //           }
+        //         }
+        //                }
 
         stage('build docker image') {
             steps {
