@@ -20,12 +20,13 @@ pipeline {
                }
             }
         }
-          stage('push docker image') {
+          stage('login and push image to docker') {
             steps {
-               script{
+            script{
+            dockerlogin()
             push('atiyadocker/wandarlustfrontpipeline:latest' , 'atiyadocker/wandarlustbackpipeline:latest')
             echo "pushing through SL"
-               }
+                  }
             }
         }
 
