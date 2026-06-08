@@ -1,20 +1,12 @@
-def build(){
-    echo "building docker image"
-    sh 'docker build -t atiyadocker/wandarlustfrontpipeline:latest ./frontend'
-    sh 'docker build -t atiyadocker/wandarlustbackpipeline:latest ./backend'
+def deploying(variable){   
+                echo 'Deploying application...'
+                echo "this is my params for choices ${params.VERSIONCHOICE}" 
+                echo "deploying with ${variable}"    
 }
-def push(){
-    echo "logging to docker hub"
-    withCredentials([
-        usernamePassword(credentialsId: 'dockerhub_creds' , usernameVariable: 'USER' , passwordVariable: 'PASSWORD' )]){
-            sh 'echo $PASSWORD | docker login -u $USER --password-stdin'
-        }
-    echo "pushing to docker hub"
-    sh 'docker push atiyadocker/wandarlustfrontpipeline:latest'
-    sh 'docker push atiyadocker/wandarlustbackpipeline:latest'
+def testing() {
+      echo 'Running tests...'
 }
-
-def deploy(){
-    echo "deploying"
+def building() {
+     echo 'buildind docker from jenkins branch'
 }
 return this
