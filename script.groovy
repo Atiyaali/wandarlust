@@ -4,9 +4,9 @@ def deploying(variable){
                 echo "deploying with ${variable}"    
 }
 def testing() {
-      echo 'Running tests...'
+      echo "Running tests on branch ${BRANCH_name}.."
 }
 def building() {
-     echo 'buildind docker from jenkins branch'
+     echo "buildind docker from ${BRANCH_NAME}"
 }
 return this

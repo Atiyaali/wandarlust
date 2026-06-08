@@ -2,14 +2,14 @@ def gv
 pipeline { 
     agent any
 
- tools {
-    nodejs "Node"
-}
+//  tools {
+//     nodejs "Node"
+// }
 
-    environment {
-        BRANCH_NAME = 'jenkins_branch' 
+    // environment {
+        // BRANCH_NAME = 'jenkins_branch' 
         // DOCKER_CREDS = credentials("dockerhub_creds")  
-    }
+    // }
 
   parameters {
  string(name:'VERSION' , defaultValue: '' , description: 'this is my version')
@@ -25,48 +25,6 @@ pipeline {
     }
    }
         }
-        stage('building') {
-            when {
-                expression {
-                    env.BRANCH_NAME == "jenkins_branch"
-                }
-            }
-            steps {
-               script{
-                gv.building()
-               }
-            }
-        }
-
-    
-
-        stage('Deploy') {
-            // input {
-            //     message "select the deploy enviroment"
-            //     ok "done"
-            //     parameters{
-            //          choice(name: 'ENV' , choices : ['dev','staging','producction'] ,  description : 'this is my enviroment choices')
-            //     }
-            // }
-            steps {
-              script{
-             def  variable = input(
-    message: "select the deploy enviroment",
-    ok: "done",
-    parameters: [
-        choice(
-            name: 'ENV',
-            choices: ['dev', 'staging', 'production'],
-            description: 'this is my enviroment choices'
-        )
-    ]
-)
-                
-                gv.deploying(variable)
-                echo "${variable}"
-              }
-            }
-        }
             stage('Test') {
             when{
                 expression{
@@ -77,10 +35,68 @@ pipeline {
               script{
                 gv.testing()
                 echo "environmental variable from stage deply "
+                echo "this is branch name where test executing ${BRANCH_NAME}"
+
+              }
+            }
+        }
+        stage('building') {
+            when {
+                expression {
+                   BRANCH_NAME == "main"
+                }
+            }
+            steps {
+               script{
+                gv.building()
+               }
+            }
+        }
+              stage('deploy') {
+            when{
+                expression{
+                   BRANCH_NAME == main
+                }
+            }
+            steps {
+              script{
+                gv.deploying()
+                echo "environmental variable from stage deply "
               }
             }
         }
     }
+    
+
+//         stage('environment') {
+//             // input {
+//             //     message "select the deploy enviroment"
+//             //     ok "done"
+//             //     parameters{
+//             //          choice(name: 'ENV' , choices : ['dev','staging','producction'] ,  description : 'this is my enviroment choices')
+//             //     }
+//             // }
+//             steps {
+//               script{
+//              def  variable = input(
+//     message: "select the deploy enviroment",
+//     ok: "done",
+//     parameters: [
+//         choice(
+//             name: 'ENV',
+//             choices: ['dev', 'staging', 'production'],
+//             description: 'this is my enviroment choices'
+//         )
+//     ]
+// )
+                
+//                 gv.deploying(variable)
+//                 echo "${variable}"
+//               }
+//             }
+//         }
+       
+
 
     post {
         always {
