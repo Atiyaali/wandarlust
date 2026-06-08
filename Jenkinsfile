@@ -17,6 +17,7 @@ pipeline {
             steps {
                script{
                 build()
+                echo "building through SL"
                }
             }
         }
@@ -24,6 +25,7 @@ pipeline {
             steps {
                script{
             push()
+            echo "pushing through SL"
                }
             }
         }
@@ -32,6 +34,7 @@ pipeline {
             steps {
               script{
               deploy()
+              echo "deploying through SL"
               }
             }
         }
