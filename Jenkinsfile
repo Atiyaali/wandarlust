@@ -49,7 +49,6 @@ pipeline {
             script{
                 sh 'git fetch --tags'
                 def tag = script.sh(
-                sh 'git fetch --tags'
                 script: 'git describe --tags',
                 returnStdout: true
             ).trim()
