@@ -32,8 +32,11 @@ pipeline {
           
             steps {
                script{
-              
-                build ('atiyadocker/wandarlustfrontpipeline' , 'atiyadocker/wandarlustbackpipeline') 
+                  def tag = script.sh(
+                script: 'git describe --tags',
+                returnStdout: true
+            ).trim()
+                build ('atiyadocker/wandarlustfrontpipeline:${tag}' , 'atiyadocker/wandarlustbackpipeline:${tag}') 
                 echo "building through SL"
                }
             }
@@ -41,8 +44,12 @@ pipeline {
           stage('login and push image to docker') {
             steps {
             script{
+                def tag = script.sh(
+                script: 'git describe --tags',
+                returnStdout: true
+            ).trim()
             dockerlogin()
-            push('atiyadocker/wandarlustfrontpipeline' , 'atiyadocker/wandarlustbackpipeline')
+            push('atiyadocker/wandarlustfrontpipeline:${tag}' , 'atiyadocker/wandarlustbackpipeline:{tag}')
             echo "pushing through SL"
                   }
             }
