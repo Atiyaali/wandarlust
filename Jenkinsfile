@@ -7,6 +7,8 @@
 //     ]
 
 // )
+
+
 library(
     identifier: 'jenkins_SL_project@main',
     retriever: modernSCM(
@@ -17,7 +19,11 @@ library(
 )
 pipeline { 
     agent any
-
+      environment {
+        BRANCH_NAME = 'jenkins_branch' 
+        DEPLOY_ENV = 'production'
+        // DOCKER_CREDS = credentials("dockerhub_creds")  
+    }
     stages {
 
         // stage('init') {
@@ -27,35 +33,48 @@ pipeline {
         //           }
         //         }
         //                }
-
-        stage('build docker image') {
-            steps {
-               script{
-                sh 'git fetch --tags'
-                def tag = sh( 
+        stage('get version'){
+            steps{
+                script{
+                    if (env.DEPLOY_ENV == "production" ){
+                        sh 'git fetch --tags'
+                env.VERSION = sh( 
                 script: 'git describe --tags',
                 returnStdout: true
             ).trim()
-                build ("atiyadocker/wandarlustfrontpipeline:${tag}" , "atiyadocker/wandarlustbackpipeline:${tag}") 
+                        
+                    }
+                    else {
+                        env.VERSION  = env.BUILD_NUMBER
+                    }
+                }
+            }
+    }
+
+        stage('build docker image ') {
+           
+            steps {
+               script{
+               
+                build ("atiyadocker/wandarlustfrontpipeline:${env.VERSION}" , "atiyadocker/wandarlustbackpipeline:${env.VERSION}") 
                 echo "building through SL"
                }
             }
         }
+       
 
-          stage('login and push image to docker') {
+          stage('login and push image to docker ') {
+           
             steps {
             script{
-                sh 'git fetch --tags'
-                def tag = sh(
-                script: 'git describe --tags',
-                returnStdout: true
-            ).trim()
+               
             dockerlogin()
-            push("atiyadocker/wandarlustfrontpipeline:${tag}" ,"atiyadocker/wandarlustbackpipeline:${tag}")
+            push("atiyadocker/wandarlustfrontpipeline:${env.VERSION}" ,"atiyadocker/wandarlustbackpipeline:${env.VERSION}")
             echo "pushing through SL"
                   }
             }
         }
+         
 
         stage('Deploy') {
             steps {
