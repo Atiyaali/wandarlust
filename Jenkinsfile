@@ -32,11 +32,14 @@ pipeline {
           
             steps {
                script{
+
+                sh 'git fetch --tags'
                   def tag = sh(
+                
                 script: 'git describe --tags',
                 returnStdout: true
             ).trim()
-                build ('atiyadocker/wandarlustfrontpipeline:${tag}' , 'atiyadocker/wandarlustbackpipeline:${tag}') 
+                build ("atiyadocker/wandarlustfrontpipeline:${tag}" , "atiyadocker/wandarlustbackpipeline:${tag}") 
                 echo "building through SL"
                }
             }
@@ -44,12 +47,14 @@ pipeline {
           stage('login and push image to docker') {
             steps {
             script{
+                sh 'git fetch --tags'
                 def tag = script.sh(
+                sh 'git fetch --tags'
                 script: 'git describe --tags',
                 returnStdout: true
             ).trim()
             dockerlogin()
-            push('atiyadocker/wandarlustfrontpipeline:${tag}' , 'atiyadocker/wandarlustbackpipeline:{tag}')
+            push("atiyadocker/wandarlustfrontpipeline:${tag}" ,"atiyadocker/wandarlustbackpipeline:${tag}")
             echo "pushing through SL"
                   }
             }
