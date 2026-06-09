@@ -32,7 +32,7 @@ pipeline {
           
             steps {
                script{
-                  def tag = script.sh(
+                  def tag = sh(
                 script: 'git describe --tags',
                 returnStdout: true
             ).trim()
