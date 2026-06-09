@@ -21,7 +21,7 @@ pipeline {
     agent any
       environment {
         BRANCH_NAME = 'jenkins_branch' 
-        DEPLOY_ENV = 'production'
+        DEPLOY_ENV = 'staging'
         // DOCKER_CREDS = credentials("dockerhub_creds")  
     }
     stages {
