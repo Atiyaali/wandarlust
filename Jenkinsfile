@@ -29,13 +29,10 @@ pipeline {
         //                }
 
         stage('build docker image') {
-          
             steps {
                script{
-
                 sh 'git fetch --tags'
-                  def tag = sh(
-                
+                def tag = sh( 
                 script: 'git describe --tags',
                 returnStdout: true
             ).trim()
@@ -44,11 +41,12 @@ pipeline {
                }
             }
         }
+
           stage('login and push image to docker') {
             steps {
             script{
                 sh 'git fetch --tags'
-                def tag = script.sh(
+                def tag = sh(
                 script: 'git describe --tags',
                 returnStdout: true
             ).trim()
