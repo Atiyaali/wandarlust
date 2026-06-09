@@ -29,9 +29,11 @@ pipeline {
         //                }
 
         stage('build docker image') {
+          
             steps {
                script{
-                build ('atiyadocker/wandarlustfrontpipeline:latest' , 'atiyadocker/wandarlustbackpipeline:latest') 
+              
+                build ('atiyadocker/wandarlustfrontpipeline' , 'atiyadocker/wandarlustbackpipeline') 
                 echo "building through SL"
                }
             }
@@ -40,7 +42,7 @@ pipeline {
             steps {
             script{
             dockerlogin()
-            push('atiyadocker/wandarlustfrontpipeline:latest' , 'atiyadocker/wandarlustbackpipeline:latest')
+            push('atiyadocker/wandarlustfrontpipeline' , 'atiyadocker/wandarlustbackpipeline')
             echo "pushing through SL"
                   }
             }
