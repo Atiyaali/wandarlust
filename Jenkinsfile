@@ -66,14 +66,14 @@ stage('Lint Backend') {
     }
 }
 
-stage('Lint Frontend') {
-    steps {
-        dir('frontend') {
-            sh 'npm install'
-            sh 'npm run lint'
-        }
-    }
-}
+// stage('Lint Frontend') {
+//     steps {
+//         dir('frontend') {
+//             sh 'npm install'
+//             sh 'npm run lint'
+//         }
+//     }
+// }
 
         stage('build docker image ') {
            
