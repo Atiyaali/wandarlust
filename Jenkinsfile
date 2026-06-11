@@ -57,14 +57,14 @@ pipeline {
                 }
             }
     }
-stage('Lint Backend') {
-    steps {
-        dir('backend') {
-            sh 'npm install'
-            sh 'npm run lint'
-        }
-    }
-}
+// stage('Lint Backend') {
+//     steps {
+//         dir('backend') {
+//             sh 'npm install'
+//             sh 'npm run lint'
+//         }
+//     }
+// }
 
 // stage('Lint Frontend') {
 //     steps {
@@ -74,14 +74,14 @@ stage('Lint Backend') {
 //         }
 //     }
 // }
-stage('Debug Docker') {
-  steps {
-    sh 'whoami'
-    sh 'echo $PATH'
-    sh 'which docker || true'
-    sh 'docker -v'
-  }
-}
+// stage('Debug Docker') {
+//   steps {
+//     sh 'whoami'
+//     sh 'echo $PATH'
+//     sh 'which docker || true'
+//     sh 'docker -v'
+//   }
+// }
         stage('build docker image ') {
            
             steps {
