@@ -18,7 +18,13 @@ library(
     )
 )
 pipeline { 
-    agent any
+    // agent any
+    agent {
+        docker {
+            image 'node:18'
+        }
+    }
+
       environment {
         BRANCH_NAME = 'jenkins_branch' 
         DEPLOY_ENV = 'staging'
