@@ -19,11 +19,11 @@ library(
 )
 pipeline { 
     // agent any
-    agent {
-        docker {
-            image 'node:18'
-        }
-    }
+    // agent {
+    //     docker {
+    //         image 'node:18'
+    //     }
+    // }
 
       environment {
         BRANCH_NAME = 'jenkins_branch' 
