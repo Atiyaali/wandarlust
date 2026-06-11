@@ -18,7 +18,9 @@
     "start": "nodemon server.js",
     "check": "prettier --check .",
     "format": "prettier --write .",
-    "vercel-build": "echo yay"
+    "vercel-build": "echo yay",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "jest": {
     "globalTeardown": "./tests/teardown.js",

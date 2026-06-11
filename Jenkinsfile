@@ -33,6 +33,7 @@ pipeline {
         //           }
         //         }
         //                }
+
         stage('get version'){
             steps{
                 script{
@@ -50,6 +51,23 @@ pipeline {
                 }
             }
     }
+stage('Lint Backend') {
+    steps {
+        dir('backend') {
+            sh 'npm install'
+            sh 'npm run lint'
+        }
+    }
+}
+
+stage('Lint Frontend') {
+    steps {
+        dir('frontend') {
+            sh 'npm install'
+            sh 'npm run lint'
+        }
+    }
+}
 
         stage('build docker image ') {
            
