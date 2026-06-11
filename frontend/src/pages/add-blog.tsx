@@ -9,14 +9,14 @@ import ModalComponent from '@/components/modal';
 import CategoryPill from '@/components/category-pill';
 import { categories } from '@/utils/category-colors';
 
-type FormData = {
+interface FormData {
   title: string;
   authorName: string;
   imageLink: string;
   categories: string[];
   description: string;
   isFeaturedPost: boolean;
-};
+}
 function AddBlog() {
   const [selectedImage, setSelectedImage] = useState<string>('');
 

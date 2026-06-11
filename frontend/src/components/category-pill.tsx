@@ -8,7 +8,7 @@ interface CategoryPillProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 export default function CategoryPill({ category, disabled, selected = false }: CategoryPillProps) {
-  const disabledColor: string =
+  const disabledColor =
     'opacity-50 bg-light-primary/10 dark:bg-dark-primary/10 dark:text-dark-primary/50 cursor-not-allowed';
 
   const [defaultColor, selectedColor]: [string, string] = getCategoryColors(category);

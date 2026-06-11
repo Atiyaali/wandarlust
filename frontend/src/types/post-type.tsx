@@ -1,4 +1,4 @@
-type Post = {
+interface Post {
   _id: string;
   authorName: string;
   title: string;
@@ -6,6 +6,6 @@ type Post = {
   timeOfPost: string;
   description: string;
   categories: string[];
-};
+}
 
 export default Post;
