@@ -74,7 +74,14 @@ stage('Lint Backend') {
 //         }
 //     }
 // }
-
+stage('Debug Docker') {
+  steps {
+    sh 'whoami'
+    sh 'echo $PATH'
+    sh 'which docker || true'
+    sh 'docker -v'
+  }
+}
         stage('build docker image ') {
            
             steps {
