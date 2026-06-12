@@ -82,8 +82,6 @@ stage('Test') {
       sh '''
         set -e
         npm test
-        echo "EXIT CODE=$?"
-        exit $?
       '''
     }
   }
