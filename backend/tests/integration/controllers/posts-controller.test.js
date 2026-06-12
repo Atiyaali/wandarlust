@@ -4,6 +4,7 @@ import Post from '../../../models/post.js';
 import server from '../../../server.js';
 import { validCategories, HTTP_STATUS, RESPONSE_MESSAGES } from '../../../utils/constants.js';
 import { createPostObject } from '../../utils/helper-objects.js';
+import { getRedisClient } from '../../../services/redis.js';
 
 afterAll(async () => {
   await mongoose.disconnect();
@@ -163,4 +164,14 @@ describe('Integration Tests: Delete Post', () => {
       message: RESPONSE_MESSAGES.POSTS.NOT_FOUND,
     });
   });
+});
+afterAll(async () => {
+  await mongoose.disconnect();
+
+  const redis = getRedisClient();
+  if (redis && redis.isOpen) {
+    await redis.quit();
+  }
+
+  server.close();
 });

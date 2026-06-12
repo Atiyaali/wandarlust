@@ -22,3 +22,9 @@ export async function connectToRedis() {
 export function getRedisClient() {
   return redis;
 }
+
+export async function disconnectRedis() {
+  if (redis && redis.isOpen) {
+    await redis.quit();
+  }
+}
