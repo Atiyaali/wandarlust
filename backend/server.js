@@ -33,8 +33,13 @@ app.get('/', (req, res) => {
   res.send('Yay!! Backend of wanderlust app is now accessible');
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-export default app;
+export default server;
+// app.listen(port, () => {
+//   console.log(`Server is running on port ${port}`);
+// });
+
+// export default app;
