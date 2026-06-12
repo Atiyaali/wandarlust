@@ -76,14 +76,18 @@ stage('Lint Backend') {
 }
 
 
+// stage('Test') {
+//   steps {
+//    script{
+//     testback()
+//    }
+//   }
+// }
 stage('Test') {
   steps {
-   script{
-    testback()
-   }
+    sh 'exit 1'
   }
 }
-
 
 
 // stage('Lint Frontend') {
