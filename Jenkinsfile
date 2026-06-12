@@ -132,18 +132,18 @@ stage('Security Scan frontend image') {
         echo 'Frontend image scan completed successfully'
     }
 }
-// stage('Security Scan backend image') {
-//     steps {
-//         sh """
-//         docker run --rm \
-//           -v /var/run/docker.sock:/var/run/docker.sock \
-//           aquasec/trivy:latest image \
-//           atiyadocker/wandarlustbackpipeline:${env.VERSION}
-//         """
+stage('Security Scan backend image') {
+    steps {
+        sh """
+        docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          aquasec/trivy:latest image \
+          atiyadocker/wandarlustbackpipeline:${env.VERSION}
+        """
 
-//         echo 'Backend image scan completed successfully'
-//     }
-// }
+        echo 'Backend image scan completed successfully'
+    }
+}
 
           stage('login and push image to docker ') {
            
