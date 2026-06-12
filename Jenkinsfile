@@ -86,7 +86,7 @@ stage('Lint Backend') {
 stage('Test') {
   steps {
     dir('backend') {
-      sh 'npm test'
+        sh 'npm test -- --detectOpenHandles --runInBand'
     }
     echo 'TEST STAGE FINISHED'
   }
