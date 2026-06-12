@@ -78,12 +78,9 @@ stage('Lint Backend') {
 
 stage('Test') {
   steps {
-    dir('backend') {
-      sh '''
-        set -e
-        npm test
-      '''
-    }
+   script{
+    testback()
+   }
   }
 }
 
