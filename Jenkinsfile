@@ -85,7 +85,9 @@ stage('Lint Backend') {
 // }
 stage('Test') {
   steps {
-    sh 'exit 1'
+    dir('backend') {
+      sh 'npm test'
+    }
   }
 }
 
