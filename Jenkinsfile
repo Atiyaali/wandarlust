@@ -119,18 +119,18 @@ stage('Test') {
                }
             }
         }
-// stage('Security Scan frontend image') {
-//     steps {
-//         sh """
-//         docker run --rm \
-//           -v /var/run/docker.sock:/var/run/docker.sock \
-//           aquasec/trivy:latest image \
-//           atiyadocker/wandarlustfrontpipeline:${env.VERSION}
-//         """
+stage('Security Scan frontend image') {
+    steps {
+        sh """
+        docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          aquasec/trivy:latest image \
+          atiyadocker/wandarlustfrontpipeline:${env.VERSION}
+        """
 
-//         echo 'Frontend image scan completed successfully'
-//     }
-// }
+        echo 'Frontend image scan completed successfully'
+    }
+}
 // stage('Security Scan backend image') {
 //     steps {
 //         sh """
