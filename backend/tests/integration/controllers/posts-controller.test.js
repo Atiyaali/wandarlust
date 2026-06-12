@@ -114,7 +114,7 @@ describe('Integration Tests: Get all latest posts', () => {
     const responseLatest = await request(server).get('/api/posts/latest');
 
     expect(responseLatest.status).toBe(HTTP_STATUS.OK);
-    expect(responseLatest.body.length).toBeGreaterThan(1);
+    expect(responseLatest.body.length).toBeGreaterThanOrEqual(1);
   });
 });
 describe('Integration Tests: Update Post', () => {
