@@ -79,8 +79,12 @@ stage('Lint Backend') {
 stage('Test') {
   steps {
     dir('backend') {
-      sh 'npm test'
-      sh 'echo $?'
+      sh '''
+        set -e
+        npm test
+        echo "EXIT CODE=$?"
+        exit $?
+      '''
     }
   }
 }
