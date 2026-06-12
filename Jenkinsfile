@@ -75,13 +75,16 @@ stage('Lint Backend') {
   }
 }
 
+
 stage('Test') {
   steps {
     dir('backend') {
       sh 'npm test'
+      sh 'echo $?'
     }
   }
 }
+
 
 
 // stage('Lint Frontend') {
