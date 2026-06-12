@@ -88,6 +88,7 @@ stage('Test') {
     dir('backend') {
       sh 'npm test'
     }
+        echo 'TEST STAGE FINISHED'
   }
 }
 
