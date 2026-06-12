@@ -26,8 +26,8 @@ pipeline {
     // }
 
       environment {
-        MONGODB_URI="mongodb://127.0.0.1/wanderlust"
-REDIS_URL="redis://localhost:6379"
+     MONGODB_URI=mongodb://mongodb:27017/wanderlust
+    REDIS_URL=redis://redis:6379
         BRANCH_NAME = 'jenkins_branch' 
         DEPLOY_ENV = 'staging'
         // DOCKER_CREDS = credentials("dockerhub_creds")  
