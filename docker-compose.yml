@@ -3,10 +3,10 @@ version: "3.9"
 services:
 
   backend:
-    # build:
-    #   context: ./backend
+    build:
+      context: ./backend
     # image: atiyadocker/wanderlust-backend:${SHA:-latest}
-    image: atiyadocker/wanderlust-backend:latest
+    # image: atiyadocker/wanderlust-backend:latest
     container_name: backend
     ports:
       - "8000:8000"
@@ -42,10 +42,10 @@ services:
       - wanderlust-network
 
   frontend:
-    # build:
-    #   context: ./frontend
+    build:
+      context: ./frontend
     # image: atiyadocker/wanderlust-frontend:${SHA:-latest}
-    image: atiyadocker/wanderlust-frontend:latest
+    # image: atiyadocker/wanderlust-frontend:latest
     container_name: frontend
     environment:
       - VITE_API_PATH=/api
@@ -56,10 +56,10 @@ services:
     networks:
       - wanderlust-network
   nginx:
-    # build:
-    #   context: ./nginx
+    build:
+      context: ./nginx
     # image: atiyadocker/wanderlust-nginx:${SHA}
-    image: atiyadocker/wanderlust-nginx:latest
+    # image: atiyadocker/wanderlust-nginx:latest
     container_name: nginx
     ports:
       - "80:80"

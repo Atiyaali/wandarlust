@@ -26,6 +26,8 @@ pipeline {
     // }
 
       environment {
+         MONGODB_URI = 'mongodb://mongodb:27017/wanderlust'
+         REDIS_URL = 'redis://redis:6379'
         BRANCH_NAME = 'jenkins_branch' 
         DEPLOY_ENV = 'staging'
         // DOCKER_CREDS = credentials("dockerhub_creds")  
@@ -57,14 +59,30 @@ pipeline {
                 }
             }
     }
-// stage('Lint Backend') {
-//     steps {
-//         dir('backend') {
-//             sh 'npm install'
-//             sh 'npm run lint'
-//         }
-//     }
-// }
+    stage('Install Backend') {
+  steps {
+    dir('backend') {
+      sh 'npm ci'
+    }
+  }
+}
+
+stage('Lint Backend') {
+  steps {
+    dir('backend') {
+      sh 'npm run lint'
+    }
+  }
+}
+
+stage('Test') {
+  steps {
+    dir('backend') {
+      sh 'npm test'
+    }
+  }
+}
+
 
 // stage('Lint Frontend') {
 //     steps {
@@ -82,6 +100,7 @@ pipeline {
 //     sh 'docker -v'
 //   }
 // }
+
         stage('build docker image ') {
            
             steps {

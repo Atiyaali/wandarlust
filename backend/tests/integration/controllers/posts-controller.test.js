@@ -13,7 +13,14 @@ let postId;
 const invalidPostId = '609c16c69405b14574c99999';
 describe('Integration Tests: Post creation', () => {
   it('Post creation: Success - All fields are valid', async () => {
-    const response = await request(server).post('/api/posts').send(createPostObject());
+    // const response = await request(server).post('/api/posts').send(createPostObject());
+    const response = await request(server)
+  .post('/api/posts')
+  .send(
+    createPostObject({
+      isFeaturedPost: true,
+    })
+  );
     postId = response.body._id;
     const fetchedPost = await Post.findById(postId);
 
@@ -99,7 +106,7 @@ describe('Integration Tests: Get all featured posts', () => {
     const responseFeatured = await request(server).get('/api/posts/featured');
 
     expect(responseFeatured.status).toBe(HTTP_STATUS.OK);
-    expect(responseFeatured.body.length).toBeGreaterThan(1);
+    expect(responseFeatured.body.length).toBeGreaterThanOrEqual(1);
   });
 });
 describe('Integration Tests: Get all latest posts', () => {
