@@ -119,7 +119,12 @@ stage('Test') {
                }
             }
         }
-       
+       stage('Security Scan') {
+  steps {
+    sh 'trivy image atiyadocker/wandarlustfrontpipeline:${env.VERSION}'
+    sh 'trivy image atiyadocker/wandarlustbackpipeline:${env.VERSION}'
+  }
+}
 
           stage('login and push image to docker ') {
            
