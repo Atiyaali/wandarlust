@@ -6,7 +6,7 @@ COPY package*.json ./
 
 RUN npm install -g pm2 && npm install
 
-COPY . .
+COPY ./backend .
 
 EXPOSE 8000
 

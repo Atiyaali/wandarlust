@@ -62,6 +62,8 @@ services:
     # image: atiyadocker/wanderlust-nginx:${SHA}
     # image: atiyadocker/wanderlust-nginx:latest
     container_name: nginx
+    volumes:
+      - ./nginx/ssl:/etc/nginx/ssl:ro
     ports:
       - "80:80"
       - "443:443"
