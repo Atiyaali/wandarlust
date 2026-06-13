@@ -92,14 +92,14 @@ parallel{
 stage('build front image') {    
     steps {
                script{
-                buildfront ("atiyadocker/wandarlustfrontpipeline:${env.VERSION}","/frontend/Dockerfile") 
+                buildfront ("atiyadocker/wandarlustfrontpipeline:${env.VERSION}","frontend/Dockerfile") 
                }
             }
 }
 stage('build back image') {    
     steps {
                script{
-                buildback ("atiyadocker/wandarlustbackpipeline:${env.VERSION}","/backend/Dockerfile") 
+                buildback ("atiyadocker/wandarlustbackpipeline:${env.VERSION}","backend/Dockerfile") 
                }
             }
 }
@@ -167,13 +167,28 @@ stage('login ') {
 stage("push docker image"){
     parallel{
      stage("push back image"){
-      backendpush("atiyadocker/wandarlustbackpipeline:${env.VERSION}")
+        steps{
+script{
+     backendpush("atiyadocker/wandarlustbackpipeline:${env.VERSION}")
+}
+        }
+     
      }   
       stage("push front image"){
-     frontendpush("atiyadocker/wandarlustfrontpipeline:${env.VERSION}")
+        steps{
+            script{
+ frontendpush("atiyadocker/wandarlustfrontpipeline:${env.VERSION}")
+            }
+        }
+    
      } 
        stage("push nginx image"){
-      nginxpush("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
+        steps{
+            script{
+   nginxpush("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
+            }
+        }
+   
      } 
     }
 }
