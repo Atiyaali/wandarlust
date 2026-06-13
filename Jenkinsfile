@@ -113,8 +113,7 @@ stage('build nginx image') {
     }
 }
 
-stage("security scan"){
-parallel{
+
  stage('Security Scan frontend image') {
     steps {
         sh """
@@ -141,21 +140,20 @@ stage('Security Scan backend image') {
         echo 'Backend image scan completed successfully'
     }
 }
-//  stage('Security Scan nginx image') {
-//     steps {
-//         sh """
-//         docker run --rm \
-//           -v /var/run/docker.sock:/var/run/docker.sock \
-//           aquasec/trivy:latest image \
-//           --timeout 15m \
-//           atiyadocker/wandarlustnginxpipeline:${env.VERSION}
-//         """
+ stage('Security Scan nginx image') {
+    steps {
+        sh """
+        docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          aquasec/trivy:latest image \
+          --timeout 15m \
+          atiyadocker/wandarlustnginxpipeline:${env.VERSION}
+        """
 
-//         echo 'nginx image scan completed successfully'
-//     }
-// }
+        echo 'nginx image scan completed successfully'
     }
 }
+
 stage('login ') {
             steps {
             script{
