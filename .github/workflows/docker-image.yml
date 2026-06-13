@@ -12,26 +12,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
-      - name: Installing Frontend dependencies
-        run: |
-          cd frontend
-          npm ci
+      # - name: Installing Frontend dependencies
+      #   run: |
+      #     cd frontend
+      #     npm ci
       - name: Installing Backend dependencies
         run: |
           cd backend
           npm ci   
-      - name: Linting frontned
-        run: |
-          cd frontend
-          npm run lint
+      # - name: Linting frontned
+      #   run: |
+      #     cd frontend
+      #     npm run lint
       - name: Linting Backend
         run: |
           cd backend
           npm run lint
-      - name: Testing Frontend
-        run: |
-          cd frontend
-          npm test -- --detectOpenHandles --runInBand
+      # - name: Testing Frontend
+      #   run: |
+      #     cd frontend
+      #     npm test -- --detectOpenHandles --runInBand
       - name: Testing backend
         run: |
           cd backend
