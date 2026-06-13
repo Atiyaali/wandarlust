@@ -64,22 +64,25 @@ jobs:
       - name: Build Backend Image
         run: |
           docker build \
+          -f backend/Dockerfile \
           -t atiyadocker/wanderlust-backend:${{ github.sha }} \
           -t atiyadocker/wanderlust-backend:latest \
-          ./backend
+          .
       
       - name: Build Frontend Image
         run: |
           docker build \
+          -f frontend/Dockerfile \
           -t atiyadocker/wanderlust-frontend:${{ github.sha }} \
           -t atiyadocker/wanderlust-frontend:latest \
-          ./frontend
+          .
       - name: Build Nginx Image
         run: |
           docker build \
+          -f nginx/Dockerfile \
           -t atiyadocker/wanderlust-nginx:${{ github.sha }} \
           -t atiyadocker/wanderlust-nginx:latest \
-          ./nginx
+          .
       - name: trivy scan frontend image
         run: |
           docker run --rm \
