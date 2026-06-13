@@ -106,7 +106,7 @@ stage('build back image') {
 stage('build nginx image') {    
     steps {
     script{
-                buildnginx ("atiyadocker/wandarlustnginxpipeline:${env.VERSION}" ,"/nginx/Dockerfile") 
+                buildnginx ("atiyadocker/wandarlustnginxpipeline:${env.VERSION}" ,"nginx/Dockerfile") 
                }
             }
 }
