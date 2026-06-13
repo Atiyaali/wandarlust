@@ -121,6 +121,7 @@ parallel{
         docker run --rm \
           -v /var/run/docker.sock:/var/run/docker.sock \
           aquasec/trivy:latest image \
+          --timeout 15m \
           atiyadocker/wandarlustfrontpipeline:${env.VERSION}
         """
 
@@ -133,6 +134,7 @@ stage('Security Scan backend image') {
         docker run --rm \
           -v /var/run/docker.sock:/var/run/docker.sock \
           aquasec/trivy:latest image \
+          --timeout 15m \
           atiyadocker/wandarlustbackpipeline:${env.VERSION}
         """
 
@@ -145,6 +147,7 @@ stage('Security Scan backend image') {
         docker run --rm \
           -v /var/run/docker.sock:/var/run/docker.sock \
           aquasec/trivy:latest image \
+          --timeout 15m \
           atiyadocker/wandarlustnginxpipeline:${env.VERSION}
         """
 
