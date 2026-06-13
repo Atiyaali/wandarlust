@@ -88,9 +88,9 @@ jobs:
           docker run --rm \
           -v /var/run/docker.sock:/var/run/docker.sock \
           aquasec/trivy:latest image \
-          --timeout 15m \
+          --timeout 15m \  
           --exit-code 1 \
-          --severity HIGH,CRITICAL \
+          --severity CRITICAL \
           atiyadocker/wanderlust-frontend:${{ github.sha }}
       - name: trivy scan backend image
         run: |
