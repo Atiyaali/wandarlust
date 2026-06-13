@@ -8,6 +8,19 @@ jobs:
   #here docker is the job and github assign seperate server for each job to run the steps
   validate:
     runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:6
+        ports:
+          - 27017:27017
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    env:
+      MONGODB_URI: mongodb://localhost:27017/wanderlust_test
+      REDIS_URL: redis://localhost:6379
     steps:
       - name: Checkout
         uses: actions/checkout@v4
