@@ -1,14 +1,3 @@
-// @Library('jenkins_shared_library') _
-// library identifier: 'jenkins_SL_project@main' , retriever: modernSCM(
-//     [$class: 'GitSCMSource',
-//     remote:'https://github.com/Atiyaali/jenkins_shared_library.git',
-//     credentialsId:'jenkins_github'
-
-//     ]
-
-// )
-
-
 library(
     identifier: 'jenkins_SL_project@main',
     retriever: modernSCM(
@@ -19,54 +8,49 @@ library(
 )
 pipeline { 
     agent any
-    // agent {
-    //     docker {
-    //         image 'node:18'
-    //     }
-    // }
 
-      environment {
+    environment {
     MONGODB_URI = "mongodb://mongo:27017/wanderlust"
         REDIS_URL   = "redis://redis:6379"
-        BRANCH_NAME = 'jenkins_branch' 
-        DEPLOY_ENV = 'staging'
-        // DOCKER_CREDS = credentials("dockerhub_creds")  
-    }
+        DEPLOY_ENV = 'staging'    }
     stages {
 
-        // stage('init') {
-        //  steps {
-        //    script {
-        //      gv = load 'script.groovy'
-        //           }
-        //         }
-        //                }
-
-        stage('get version'){
-            steps{
-                script{
-                    if (env.DEPLOY_ENV == "production" ){
-                        sh 'git fetch --tags'
-                env.VERSION = sh( 
-                script: 'git describe --tags',
-                returnStdout: true
-            ).trim()
-                        
-                    }
-                    else {
-                        env.VERSION  = env.BUILD_NUMBER
-                    }
-                }
-            }
+stage('get version'){
+    steps{
+    script{
+    if (env.DEPLOY_ENV == "production" ){
+        sh 'git fetch --tags'
+        env.VERSION = sh( 
+        script: 'git describe --tags',
+        returnStdout: true
+        ).trim()}
+    else {
+        env.VERSION  = env.BUILD_NUMBER
+        }
+        }
+        }
     }
-    stage('Install Backend') {
+stage("install dependencies"){
+parallel{
+stage('Install Backend') {
   steps {
     dir('backend') {
       sh 'npm ci'
     }
   }
 }
+// stage('Install Frontend') {
+//   steps {
+//     dir('frontend') {
+//       sh 'npm ci'
+//     }
+//   }
+// }
+        }
+    }
 
+stage("linting"){
+parallel{
 stage('Lint Backend') {
   steps {
     dir('backend') {
@@ -74,53 +58,64 @@ stage('Lint Backend') {
     }
   }
 }
-
-
-// stage('Test') {
-//   steps {
-//    script{
-//     testback()
-//    }
-//   }
-// }
-stage('Test') {
-  steps {
-    dir('backend') {
-        sh 'npm test -- --detectOpenHandles --runInBand'
-    }
-    echo 'TEST STAGE FINISHED'
-  }
-}
-
-
 // stage('Lint Frontend') {
 //     steps {
 //         dir('frontend') {
-//             sh 'npm install'
 //             sh 'npm run lint'
 //         }
 //     }
 // }
-// stage('Debug Docker') {
+}
+}
+stage("testing"){
+parallel{
+stage('Test backend') {
+  steps {
+    dir('backend') {
+        sh 'npm test -- --detectOpenHandles --runInBand'
+    }
+    echo 'Backend TEST STAGE FINISHED'
+  }
+}
+// stage('Test frontend') {
 //   steps {
-//     sh 'whoami'
-//     sh 'echo $PATH'
-//     sh 'which docker || true'
-//     sh 'docker -v'
+//     dir('frontend') {
+//         sh 'npm test -- --detectOpenHandles --runInBand'
+//     }
+//     echo 'Frontend TEST STAGE FINISHED'
 //   }
 // }
-
-        stage('build docker image ') {
-           
-            steps {
+    }
+}
+stage("build docker image"){
+parallel{
+stage('build front image') {    
+    steps {
                script{
-               
-                build ("atiyadocker/wandarlustfrontpipeline:${env.VERSION}" , "atiyadocker/wandarlustbackpipeline:${env.VERSION}") 
-                echo "building through SL"
+                buildfront ("atiyadocker/wandarlustfrontpipeline:${env.VERSION}","/frontend/Dockerfile") 
                }
             }
-        }
-stage('Security Scan frontend image') {
+}
+stage('build back image') {    
+    steps {
+               script{
+                buildback ("atiyadocker/wandarlustbackpipeline:${env.VERSION}","/backend/Dockerfile") 
+               }
+            }
+}
+stage('build nginx image') {    
+    steps {
+    script{
+                buildnginx ("atiyadocker/wandarlustnginxpipeline:${env.VERSION}" ,"/nginx/Dockerfile") 
+               }
+            }
+}
+    }
+}
+
+stage("security scan"){
+parallel{
+ stage('Security Scan frontend image') {
     steps {
         sh """
         docker run --rm \
@@ -144,21 +139,45 @@ stage('Security Scan backend image') {
         echo 'Backend image scan completed successfully'
     }
 }
+ stage('Security Scan nginx image') {
+    steps {
+        sh """
+        docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          aquasec/trivy:latest image \
+          atiyadocker/wandarlustnginxpipeline:${env.VERSION}
+        """
 
-          stage('login and push image to docker ') {
-           
+        echo 'nginx image scan completed successfully'
+    }
+}
+    }
+}
+stage('login ') {
             steps {
             script{
                
             dockerlogin()
-            push("atiyadocker/wandarlustfrontpipeline:${env.VERSION}" ,"atiyadocker/wandarlustbackpipeline:${env.VERSION}")
+            
             echo "pushing through SL"
                   }
             }
-        }
+}
          
-
-        stage('Deploy') {
+stage("push docker image"){
+    parallel{
+     stage("push back image"){
+      backendpush("atiyadocker/wandarlustbackpipeline:${env.VERSION}")
+     }   
+      stage("push front image"){
+     frontendpush("atiyadocker/wandarlustfrontpipeline:${env.VERSION}")
+     } 
+       stage("push nginx image"){
+      nginxpush("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
+     } 
+    }
+}
+stage('Deploy') {
             steps {
               script{
               deploy()
