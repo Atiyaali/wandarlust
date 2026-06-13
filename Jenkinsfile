@@ -10,15 +10,19 @@ pipeline {
     agent any
 
     environment {
-    MONGODB_URI = "mongodb://mongo:27017/wanderlust"
+        MONGODB_URI = "mongodb://mongo:27017/wanderlust"
         REDIS_URL   = "redis://redis:6379"
-        DEPLOY_ENV = 'staging'    }
+      
+         }
+    parameters {
+    choice(name: 'DEPLOY_ENV', choices: ['dev', 'staging', 'production'], description: 'Environment')
+}
     stages {
 
 stage('get version'){
     steps{
     script{
-    if (env.DEPLOY_ENV == "production" ){
+    if (params.DEPLOY_ENV == "production" ){
         sh 'git fetch --tags'
         env.VERSION = sh( 
         script: 'git describe --tags',
@@ -92,21 +96,21 @@ parallel{
 stage('build front image') {    
     steps {
                script{
-                buildfront ("atiyadocker/wandarlustfrontpipeline:${env.VERSION}","frontend/Dockerfile") 
+                build ("atiyadocker/wandarlustfrontpipeline:${env.VERSION}","frontend/Dockerfile") 
                }
             }
 }
 stage('build back image') {    
     steps {
                script{
-                buildback ("atiyadocker/wandarlustbackpipeline:${env.VERSION}","backend/Dockerfile") 
+                build ("atiyadocker/wandarlustbackpipeline:${env.VERSION}","backend/Dockerfile") 
                }
             }
 }
 stage('build nginx image') {    
     steps {
     script{
-                buildnginx ("atiyadocker/wandarlustnginxpipeline:${env.VERSION}" ,"nginx/Dockerfile") 
+                build ("atiyadocker/wandarlustnginxpipeline:${env.VERSION}" ,"nginx/Dockerfile") 
                }
             }
 }
@@ -116,50 +120,38 @@ stage('build nginx image') {
 
  stage('Security Scan frontend image') {
     steps {
-        sh """
-        docker run --rm \
-          -v /var/run/docker.sock:/var/run/docker.sock \
-          aquasec/trivy:latest image \
-          --timeout 15m \
-          atiyadocker/wandarlustfrontpipeline:${env.VERSION}
-        """
+       script{
+        trivyscan("atiyadocker/wandarlustfrontpipeline:${env.VERSION}")
+          echo 'Frontend image scan completed successfully'
+       }
 
-        echo 'Frontend image scan completed successfully'
+      
     }
 }
 stage('Security Scan backend image') {
     steps {
-        sh """
-        docker run --rm \
-          -v /var/run/docker.sock:/var/run/docker.sock \
-          aquasec/trivy:latest image \
-          --timeout 15m \
-          atiyadocker/wandarlustbackpipeline:${env.VERSION}
-        """
+      script{
+        trivyscan("atiyadocker/wandarlustbackpipeline:${env.VERSION}")
+          echo 'Backend image scan completed successfully'
+      }
 
-        echo 'Backend image scan completed successfully'
+      
     }
 }
  stage('Security Scan nginx image') {
     steps {
-        sh """
-        docker run --rm \
-          -v /var/run/docker.sock:/var/run/docker.sock \
-          aquasec/trivy:latest image \
-          --timeout 15m \
-          atiyadocker/wandarlustnginxpipeline:${env.VERSION}
-        """
-
+       script{
+        trivyscan("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
         echo 'nginx image scan completed successfully'
+      }
+        
     }
 }
 
 stage('login ') {
             steps {
-            script{
-               
+            script{  
             dockerlogin()
-            
             echo "pushing through SL"
                   }
             }
@@ -170,34 +162,46 @@ stage("push docker image"){
      stage("push back image"){
         steps{
 script{
-     backendpush("atiyadocker/wandarlustbackpipeline:${env.VERSION}")
+     backend("atiyadocker/wandarlustbackpipeline:${env.VERSION}")
 }
         }
      
      }   
-      stage("push front image"){
+stage("push front image"){
         steps{
             script{
- frontendpush("atiyadocker/wandarlustfrontpipeline:${env.VERSION}")
+ frontend("atiyadocker/wandarlustfrontpipeline:${env.VERSION}")
             }
         }
     
      } 
-       stage("push nginx image"){
+stage("push nginx image"){
         steps{
             script{
-   nginxpush("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
+   nginx("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
             }
         }
    
      } 
     }
 }
+stage('Production Approval') {
+    when {
+        expression { params.DEPLOY_ENV == "production" }
+    }
+    steps {
+        input message: "Deploy to PRODUCTION?"
+    }
+}
 stage('Deploy') {
+    when {
+        expression {
+            params.DEPLOY_ENV == "production"
+        }
+    }
             steps {
               script{
               deploy()
-              echo "deploying through SL"
               }
             }
         }
