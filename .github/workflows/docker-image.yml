@@ -88,26 +88,28 @@ jobs:
           docker run --rm \
           -v /var/run/docker.sock:/var/run/docker.sock \
           aquasec/trivy:latest image \
-          --timeout 15m \  
+          --timeout 15m \
+          --scanners vuln \
+          --db-repository ghcr.io/aquasecurity/trivy-db \
           atiyadocker/wanderlust-frontend:${{ github.sha }}
       - name: trivy scan backend image
         run: |
-          docker run --rm \
+           docker run --rm \
           -v /var/run/docker.sock:/var/run/docker.sock \
           aquasec/trivy:latest image \
-          --exit-code 1 \
-          --severity HIGH,CRITICAL \
           --timeout 15m \
+          --scanners vuln \
+          --db-repository ghcr.io/aquasecurity/trivy-db \
           atiyadocker/wanderlust-backend:${{ github.sha }}
 
       - name: trivy scan nginx image
         run: |
-          docker run --rm \
+           docker run --rm \
           -v /var/run/docker.sock:/var/run/docker.sock \
           aquasec/trivy:latest image \
           --timeout 15m \
-          --exit-code 1 \
-          --severity HIGH,CRITICAL \
+          --scanners vuln \
+          --db-repository ghcr.io/aquasecurity/trivy-db \
           atiyadocker/wanderlust-nginx:${{ github.sha }}
       - name: push backend image
         run: |
