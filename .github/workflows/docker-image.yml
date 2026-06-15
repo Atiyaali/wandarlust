@@ -53,6 +53,7 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
+    environment: staging
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -123,23 +124,42 @@ jobs:
         run: |
           docker push atiyadocker/wanderlust-nginx:${{ github.sha }}
           docker push atiyadocker/wanderlust-nginx:latest
-  # deploy:
-    # needs: Docker
-    # runs-on: ubuntu-latest
-    # if: github.event_name == 'push'
-    # steps:
-    #   - name: Deploy to server
-    #     uses: appleboy/ssh-action@v1.0.3
-    #     with:
-    #         host: ${{ secrets.SERVER_HOST }}
-    #         username: ${{secrets.SERVER_USERNAME }}
-    #         password: ${{secrets.SERVER_PASSWORD }}
+  # deploy-staging:
+  #   needs: Docker
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'push'
+  #   environment: staging
+  #   steps:
+  #     - name: Deploy to server
+  #       uses: appleboy/ssh-action@v1.0.3
+  #       with:
+  #           host: ${{ secrets.SERVER_HOST }}
+  #           username: ${{secrets.SERVER_USERNAME }}
+  #           password: ${{secrets.SERVER_PASSWORD }}
 
-    #         script: |
-    #          cd /app/wanderlust
-    #          sed -i "s/^VERSION=.*/VERSION=${{ github.sha }}/" .env || echo "VERSION=${{ github.sha }}" >> .env
-    #          docker compose pull
-    #          docker compose up -d --remove-orphans
+  #           script: |
+  #            cd /app/wanderlust
+  #            sed -i "s/^VERSION=.*/VERSION=${{ github.sha }}/" .env || echo "VERSION=${{ github.sha }}" >> .env
+  #            docker compose pull
+  #            docker compose up -d --remove-orphans
+  # deploy-production:
+  #   needs: Docker
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'push'
+  #   environment: Production
+  #   steps:
+  #     - name: Deploy to server
+  #       uses: appleboy/ssh-action@v1.0.3
+  #       with:
+  #           host: ${{ secrets.SERVER_HOST }}
+  #           username: ${{secrets.SERVER_USERNAME }}
+  #           password: ${{secrets.SERVER_PASSWORD }}
+
+  #           script: |
+  #            cd /app/wanderlust
+  #            sed -i "s/^VERSION=.*/VERSION=${{ github.sha }}/" .env || echo "VERSION=${{ github.sha }}" >> .env
+  #            docker compose pull
+  #            docker compose up -d --remove-orphans
   create-issue:
     runs-on: ubuntu-latest
     needs: [Docker,validate]
