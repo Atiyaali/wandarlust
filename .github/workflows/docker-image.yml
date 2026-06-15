@@ -66,23 +66,23 @@ jobs:
         run: |
           docker build \
           -f backend/Dockerfile \
-          -t atiyadocker/wanderlust-backend:${{ github.sha }} \
-          -t atiyadocker/wanderlust-backend:latest \
+          -t atiyaali/wanderlust-backend:${{ github.sha }} \
+          -t atiyaali/wanderlust-backend:latest \
           .
       
       - name: Build Frontend Image
         run: |
           docker build \
           -f frontend/Dockerfile \
-          -t atiyadocker/wanderlust-frontend:${{ github.sha }} \
-          -t atiyadocker/wanderlust-frontend:latest \
+          -t atiyaali/wanderlust-frontend:${{ github.sha }} \
+          -t atiyaali/wanderlust-frontend:latest \
           .
       - name: Build Nginx Image
         run: |
           docker build \
           -f nginx/Dockerfile \
-          -t atiyadocker/wanderlust-nginx:${{ github.sha }} \
-          -t atiyadocker/wanderlust-nginx:latest \
+          -t atiyaali/wanderlust-nginx:${{ github.sha }} \
+          -t atiyaali/wanderlust-nginx:latest \
           .
       - name: trivy scan frontend image
         run: |
@@ -92,7 +92,7 @@ jobs:
           --timeout 15m \
           --scanners vuln \
           --db-repository ghcr.io/aquasecurity/trivy-db \
-          atiyadocker/wanderlust-frontend:${{ github.sha }}
+          atiyaali/wanderlust-frontend:${{ github.sha }}
       - name: trivy scan backend image
         run: |
           docker run --rm \
@@ -101,7 +101,7 @@ jobs:
           --timeout 15m \
           --scanners vuln \
           --db-repository ghcr.io/aquasecurity/trivy-db \
-          atiyadocker/wanderlust-backend:${{ github.sha }}
+          atiyaali/wanderlust-backend:${{ github.sha }}
 
       - name: trivy scan nginx image
         run: |
@@ -111,19 +111,19 @@ jobs:
           --timeout 15m \
           --scanners vuln \
           --db-repository ghcr.io/aquasecurity/trivy-db \
-          atiyadocker/wanderlust-nginx:${{ github.sha }}
+          atiyaali/wanderlust-nginx:${{ github.sha }}
       - name: push backend image
         run: |
-          docker push atiyadocker/wanderlust-backend:${{ github.sha }}
-          docker push atiyadocker/wanderlust-backend:latest
+          docker push atiyaali/wanderlust-backend:${{ github.sha }}
+          docker push atiyaali/wanderlust-backend:latest
       - name: push frontend image
         run: |
-          docker push atiyadocker/wanderlust-frontend:${{ github.sha }}
-          docker push atiyadocker/wanderlust-frontend:latest
+          docker push atiyaali/wanderlust-frontend:${{ github.sha }}
+          docker push atiyaali/wanderlust-frontend:latest
       - name: push nginx image
         run: |
-          docker push atiyadocker/wanderlust-nginx:${{ github.sha }}
-          docker push atiyadocker/wanderlust-nginx:latest
+          docker push atiyaali/wanderlust-nginx:${{ github.sha }}
+          docker push atiyaali/wanderlust-nginx:latest
   # deploy-staging:
   #   needs: Docker
   #   runs-on: ubuntu-latest
