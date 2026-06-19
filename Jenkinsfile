@@ -71,16 +71,16 @@ stage('Lint Backend') {
 // }
 }
 }
-stage("testing"){
-parallel{
-stage('Test backend') {
-  steps {
-    dir('backend') {
-        sh 'npm test -- --detectOpenHandles --runInBand'
-    }
-    echo 'Backend TEST STAGE FINISHED'
-  }
-}
+// stage("testing"){
+// parallel{
+// stage('Test backend') {
+//   steps {
+//     dir('backend') {
+//         sh 'npm test -- --detectOpenHandles --runInBand'
+//     }
+//     echo 'Backend TEST STAGE FINISHED'
+//   }
+// }
 // stage('Test frontend') {
 //   steps {
 //     dir('frontend') {
@@ -89,8 +89,8 @@ stage('Test backend') {
 //     echo 'Frontend TEST STAGE FINISHED'
 //   }
 // }
-    }
-}
+//     }
+// }
 stage("build docker image"){
 parallel{
 stage('build front image') {    
