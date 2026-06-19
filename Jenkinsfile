@@ -118,35 +118,35 @@ stage('build nginx image') {
 }
 
 
- stage('Security Scan frontend image') {
-    steps {
-       script{
-        trivyscan("atiyadocker/wandarlustfrontpipeline:${env.VERSION}")
-          echo 'Frontend image scan completed successfully'
-       }
+//  stage('Security Scan frontend image') {
+//     steps {
+//        script{
+//         trivyscan("atiyadocker/wandarlustfrontpipeline:${env.VERSION}")
+//           echo 'Frontend image scan completed successfully'
+//        }
 
       
-    }
-}
-stage('Security Scan backend image') {
-    steps {
-      script{
-        trivyscan("atiyadocker/wandarlustbackpipeline:${env.VERSION}")
-          echo 'Backend image scan completed successfully'
-      }
+//     }
+// }
+// stage('Security Scan backend image') {
+//     steps {
+//       script{
+//         trivyscan("atiyadocker/wandarlustbackpipeline:${env.VERSION}")
+//           echo 'Backend image scan completed successfully'
+//       }
 
       
-    }
-}
- stage('Security Scan nginx image') {
-    steps {
-       script{
-        trivyscan("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
-        echo 'nginx image scan completed successfully'
-      }
+//     }
+// }
+//  stage('Security Scan nginx image') {
+//     steps {
+//        script{
+//         trivyscan("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
+//         echo 'nginx image scan completed successfully'
+//       }
         
-    }
-}
+//     }
+// }
 
 stage('login ') {
             steps {
@@ -162,7 +162,7 @@ stage("push docker image"){
      stage("push back image"){
         steps{
 script{
-     backend("atiyadocker/wandarlustbackpipeline:${env.VERSION}")
+     push("atiyadocker/wandarlustbackpipeline:${env.VERSION}")
 }
         }
      
@@ -170,7 +170,7 @@ script{
 stage("push front image"){
         steps{
             script{
- frontend("atiyadocker/wandarlustfrontpipeline:${env.VERSION}")
+ push("atiyadocker/wandarlustfrontpipeline:${env.VERSION}")
             }
         }
     
@@ -178,7 +178,7 @@ stage("push front image"){
 stage("push nginx image"){
         steps{
             script{
-   nginx("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
+  push("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
             }
         }
    

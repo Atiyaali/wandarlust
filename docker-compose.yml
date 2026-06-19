@@ -6,7 +6,7 @@ services:
     # build:
     #   context: ./backend
     # image: atiyadocker/wanderlust-backend:${SHA:-latest}
-    image: atiyadocker/wandarlustbackpipeline:65
+    image: atiyadocker/wandarlustbackpipeline:${VERSION}
 
     container_name: backend
     ports:
@@ -46,7 +46,7 @@ services:
     # build:
     #   context: ./frontend
     # image: atiyadocker/wanderlust-frontend:${SHA:-latest}
-    image: atiyadocker/wandarlustfrontpipeline:65
+    image: atiyadocker/wandarlustfrontpipeline:${VERSION}
     container_name: frontend
     environment:
       - VITE_API_PATH=/api
@@ -57,10 +57,10 @@ services:
     networks:
       - wanderlust-network
   nginx:
-    build:
-      context: ./nginx
+    # build:
+    #   context: ./nginx
     # image: atiyadocker/wanderlust-nginx:${SHA}
-    # image: atiyadocker/wanderlust-nginx:latest
+    image: atiyadocker/wanderlust-nginx:${VERSION}
     container_name: nginx
     volumes:
       - ./nginx/ssl:/etc/nginx/ssl:ro
