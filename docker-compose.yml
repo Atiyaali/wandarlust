@@ -60,7 +60,7 @@ services:
     # build:
     #   context: ./nginx
     # image: atiyadocker/wanderlust-nginx:${SHA}
-    image: atiyadocker/wanderlust-nginx:${VERSION}
+    image: atiyadocker/wandarlustnginxpipeline:${VERSION}
     container_name: nginx
     volumes:
       - ./nginx/ssl:/etc/nginx/ssl:ro
