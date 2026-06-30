@@ -208,7 +208,11 @@ stage('Update ECS Task Definition') {
         }
     }
 }
-
+stage('Debug JSON') {
+    steps {
+        sh 'cat ecs/task.json'
+    }
+}
 stage('Register Task Definition') {
     steps {
         script {
