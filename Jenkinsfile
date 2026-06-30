@@ -201,9 +201,9 @@ stage('Update ECS Task Definition') {
     steps {
         script {
             sh """
-            sed -i "s|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:.*|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:${env.VERSION}|g" ecs/task-definition.json
+            sed -i "s|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:.*|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:${env.VERSION}|g" ecs/task.json
 
-            sed -i "s|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:.*|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:${env.VERSION}|g" ecs/task-definition.json
+            sed -i "s|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:.*|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:${env.VERSION}|g" ecs/task.json
             """
         }
     }
@@ -219,7 +219,7 @@ stage('Register Task Definition') {
 
                 sh """
                 aws ecs register-task-definition \
-                --cli-input-json file://ecs/task-definition.json
+                --cli-input-json file://ecs/task.json
                 """
             }
         }
