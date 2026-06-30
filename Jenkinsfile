@@ -223,6 +223,7 @@ stage('Register Task Definition') {
 
                 sh """
                 aws ecs register-task-definition \
+                --region us-east-1 \
                 --cli-input-json file://ecs/task.json
                 """
             }
@@ -239,8 +240,9 @@ stage('Deploy to ECS') {
 
                 sh """
                 aws ecs update-service \
-                  --cluster wandarlust-cluster \
-                  --service wandarlust-service \
+                  --region us-east-1 \
+                  --cluster wandarlust \
+                  --service wandarlust-service-8jkwt2wa \
                   --task-definition wandarlust
                 """
             }
