@@ -201,18 +201,18 @@ stage('Update ECS Task Definition') {
     steps {
         script {
             sh """
-            sed -i "s|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:.*|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:${env.VERSION}|g" ecs/task.json
+            sed -i 's#wandarlustfrontpipeline:[^"]*#wandarlustfrontpipeline:${BUILD_NUMBER}#' ecs/task.json
 
-            sed -i "s|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:.*|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:${env.VERSION}|g" ecs/task.json
+            sed -i 's#wandarlustbackpipeline:[^"]*#wandarlustbackpipeline:${BUILD_NUMBER}#' ecs/task.json
             """
         }
     }
 }
-stage('Debug JSON') {
-    steps {
-        sh 'cat ecs/task.json'
-    }
-}
+// stage('Debug JSON') {
+//     steps {
+//         sh 'cat ecs/task.json'
+//     }
+// }
 stage('Register Task Definition') {
     steps {
         script {
