@@ -196,6 +196,54 @@ stage("push nginx image"){
      } 
     }
 }
+
+stage('Update ECS Task Definition') {
+    steps {
+        script {
+            sh """
+            sed -i "s|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:.*|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:${env.VERSION}|g" ecs/task-definition.json
+
+            sed -i "s|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:.*|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:${env.VERSION}|g" ecs/task-definition.json
+            """
+        }
+    }
+}
+
+stage('Register Task Definition') {
+    steps {
+        script {
+            withCredentials([
+                [$class: 'AmazonWebServicesCredentialsBinding',
+                 credentialsId: 'aws-creds']
+            ]) {
+
+                sh """
+                aws ecs register-task-definition \
+                --cli-input-json file://ecs/task-definition.json
+                """
+            }
+        }
+    }
+}
+stage('Deploy to ECS') {
+    steps {
+        script {
+            withCredentials([
+                [$class: 'AmazonWebServicesCredentialsBinding',
+                 credentialsId: 'aws-creds']
+            ]) {
+
+                sh """
+                aws ecs update-service \
+                  --cluster wandarlust-cluster \
+                  --service wandarlust-service \
+                  --task-definition wandarlust
+                """
+            }
+        }
+    }
+}
+
 stage('Production Approval') {
     when {
         expression { params.DEPLOY_ENV == "production" }

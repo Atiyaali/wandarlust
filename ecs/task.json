@@ -1,0 +1,132 @@
+{
+    "family": "wandarlust",
+    "taskRoleArn": "arn:aws:iam::590398356271:role/ecsTaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::590398356271:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "containerDefinitions": [
+      {
+        "name": "frontend",
+        "image": "590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:15",
+        "cpu": 1024,
+        "memory": 1024,
+        "memoryReservation": 1024,
+        "essential": true,
+        "portMappings": [
+          {
+            "containerPort": 5173,
+            "hostPort": 5173,
+            "protocol": "tcp",
+            "name": "frontend-5173-tcp",
+            "appProtocol": "http"
+          }
+        ],
+        "environment": [
+          {
+            "name": "VITE_API_PATH",
+            "value": "/api"
+          }
+        ],
+        "environmentFiles": [],
+        "mountPoints": [],
+        "volumesFrom": [],
+        "ulimits": [],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+            "awslogs-group": "/ecs/wandarlust",
+            "awslogs-create-group": "true",
+            "awslogs-region": "us-east-1",
+            "awslogs-stream-prefix": "ecs"
+          },
+          "secretOptions": []
+        },
+        "systemControls": []
+      },
+      {
+        "name": "backend",
+        "image": "590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:15",
+        "cpu": 1024,
+        "memory": 1024,
+        "memoryReservation": 1024,
+        "essential": true,
+        "portMappings": [
+          {
+            "containerPort": 8000,
+            "hostPort": 8000,
+            "protocol": "tcp",
+            "name": "backend-8000-tcp",
+            "appProtocol": "http"
+          }
+        ],
+        "environment": [
+          {
+            "name": "MONGODB_URI",
+            "value": "mongodb://mongodb:27017/wanderlust"
+          },
+          {
+            "name": "REDIS_URL",
+            "value": "redis://redis:6379"
+          }
+        ],
+        "environmentFiles": [],
+        "mountPoints": [],
+        "volumesFrom": [],
+        "systemControls": []
+      },
+      {
+        "name": "redis",
+        "image": "redis:latest",
+        "cpu": 0,
+        "memory": 1024,
+        "memoryReservation": 1024,
+        "essential": false,
+        "portMappings": [
+          {
+            "containerPort": 6379,
+            "hostPort": 6379,
+            "protocol": "tcp",
+            "name": "redis-6379-tcp",
+            "appProtocol": "http"
+          }
+        ],
+        "environment": [],
+        "environmentFiles": [],
+        "mountPoints": [],
+        "volumesFrom": [],
+        "systemControls": []
+      },
+      {
+        "name": "mongodb",
+        "image": "mongo:7.0.34-jammy",
+        "cpu": 0,
+        "memory": 1024,
+        "memoryReservation": 1024,
+        "essential": true,
+        "portMappings": [
+          {
+            "containerPort": 27017,
+            "hostPort": 27017,
+            "protocol": "tcp",
+            "name": "mongodb-27017-tcp",
+            "appProtocol": "http"
+          }
+        ],
+        "environment": [],
+        "environmentFiles": [],
+        "mountPoints": [],
+        "volumesFrom": [],
+        "systemControls": []
+      }
+    ],
+    "volumes": [],
+    "placementConstraints": [],
+    "requiresCompatibilities": [
+      "FARGATE"
+    ],
+    "runtimePlatform": {
+      "cpuArchitecture": "X86_64",
+      "operatingSystemFamily": "LINUX"
+    },
+    "cpu": "2048",
+    "memory": "4096"
+  }
