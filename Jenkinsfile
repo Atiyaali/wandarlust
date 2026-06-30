@@ -156,6 +156,7 @@ stage('build nginx image') {
 stage('login ') {
             steps {
             script{  
+                
             dockerlogin()
          
             echo "pushing through SL"
@@ -188,7 +189,7 @@ stage("push nginx image"){
         steps{
             script{
 //   push("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
-  csrpush("590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustnginxpipeline:${env.VERSION}")
+  pushcsr("590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustnginxpipeline:${env.VERSION}")
             }
         }
    
