@@ -96,21 +96,26 @@ parallel{
 stage('build front image') {    
     steps {
                script{
-                build ("atiyadocker/wandarlustfrontpipeline:${env.VERSION}","frontend/Dockerfile") 
+                // build ("atiyadocker/wandarlustfrontpipeline:${env.VERSION}","frontend/Dockerfile") 
+                build ("590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:${env.VERSION}","frontend/Dockerfile") 
+
+
                }
             }
 }
 stage('build back image') {    
     steps {
                script{
-                build ("atiyadocker/wandarlustbackpipeline:${env.VERSION}","backend/Dockerfile") 
+                build ("590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:${env.VERSION}","backend/Dockerfile") 
+                // build ("atiyadocker/wandarlustbackpipeline:${env.VERSION}","backend/Dockerfile") 
                }
             }
 }
 stage('build nginx image') {    
     steps {
     script{
-                build ("atiyadocker/wandarlustnginxpipeline:${env.VERSION}" ,"nginx/Dockerfile") 
+                build ("590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustnginxpipeline:${env.VERSION}" ,"nginx/Dockerfile") 
+                // build ("atiyadocker/wandarlustnginxpipeline:${env.VERSION}" ,"nginx/Dockerfile") 
                }
             }
 }
@@ -152,6 +157,7 @@ stage('login ') {
             steps {
             script{  
             dockerlogin()
+         
             echo "pushing through SL"
                   }
             }
@@ -162,7 +168,9 @@ stage("push docker image"){
      stage("push back image"){
         steps{
 script{
-     push("atiyadocker/wandarlustbackpipeline:${env.VERSION}")
+    //  push("atiyadocker/wandarlustbackpipeline:${env.VERSION}")
+    pushcsr("590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:${env.VERSION}")
+    
 }
         }
      
@@ -170,7 +178,8 @@ script{
 stage("push front image"){
         steps{
             script{
- push("atiyadocker/wandarlustfrontpipeline:${env.VERSION}")
+//  push("atiyadocker/wandarlustfrontpipeline:${env.VERSION}")
+ pushcsr("590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:${env.VERSION}")
             }
         }
     
@@ -178,7 +187,8 @@ stage("push front image"){
 stage("push nginx image"){
         steps{
             script{
-  push("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
+//   push("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
+  csrpush("590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustnginxpipeline:${env.VERSION}")
             }
         }
    
