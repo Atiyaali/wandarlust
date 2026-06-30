@@ -23,7 +23,7 @@
         "environment": [
           {
             "name": "VITE_API_PATH",
-            "value": "/api"
+            "value": "http://54.162.183.220:8000" 
           }
         ],
         "environmentFiles": [],
