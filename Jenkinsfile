@@ -10,12 +10,18 @@ pipeline {
     agent any
 
     environment {
+        SONAR_HOST_URL=http://54.12.34.56:9000
         MONGODB_URI = "mongodb://mongo:27017/wanderlust"
         REDIS_URL   = "redis://redis:6379"
       
          }
     parameters {
     choice(name: 'DEPLOY_ENV', choices: ['dev', 'staging', 'production'], description: 'Environment')
+     choice(
+        name: 'DEPLOY_MODE',
+        choices: ['UPDATE', 'CREATE'],
+        description: 'Choose whether to create a new ECS service or update an existing one.'
+    )
 }
     stages {
 
@@ -89,6 +95,23 @@ stage('Lint Backend') {
 //     echo 'Frontend TEST STAGE FINISHED'
 //   }
 // }
+//     }
+// }
+
+// stage('SAST - SonarQube Scan') {
+//     steps {
+//         dir('backend') {
+//             withSonarQubeEnv('SonarQube') {
+//                 sh '''
+//                 npm install
+//                 npx sonar-scanner \
+//                   -Dsonar.projectKey=wanderlust \
+//                   -Dsonar.sources=. \
+//                   -Dsonar.host.url=$SONAR_HOST_URL \
+//                   -Dsonar.login=$SONAR_AUTH_TOKEN
+//                 '''
+//             }
+//         }
 //     }
 // }
 stage("build docker image"){
@@ -197,58 +220,120 @@ stage("push nginx image"){
     }
 }
 
-stage('Update ECS Task Definition') {
-    steps {
-        script {
-            sh """
-            sed -i 's#wandarlustfrontpipeline:[^"]*#wandarlustfrontpipeline:${BUILD_NUMBER}#' ecs/task.json
+// stage('Update ECS Task Definition') {
+//     steps {
+//         script {
+//             sh """
+//             sed -i 's#wandarlustfrontpipeline:[^"]*#wandarlustfrontpipeline:${BUILD_NUMBER}#' ecs/task.json
 
-            sed -i 's#wandarlustbackpipeline:[^"]*#wandarlustbackpipeline:${BUILD_NUMBER}#' ecs/task.json
-            """
-        }
-    }
-}
+//             sed -i 's#wandarlustbackpipeline:[^"]*#wandarlustbackpipeline:${BUILD_NUMBER}#' ecs/task.json
+             
+//             sed -i 's#wandarlustbackpipeline:[^"]*#wandarlustnginxpipeline:${BUILD_NUMBER}#' ecs/task.json
+
+
+//             """
+//         }
+//     }
+// }
 // stage('Debug JSON') {
 //     steps {
 //         sh 'cat ecs/task.json'
 //     }
 // }
-stage('Register Task Definition') {
-    steps {
-        script {
-            withCredentials([
-                [$class: 'AmazonWebServicesCredentialsBinding',
-                 credentialsId: 'aws-creds']
-            ]) {
+// stage('Register Task Definition') {
+//     steps {
+//         script {
+//             withCredentials([
+//                 [$class: 'AmazonWebServicesCredentialsBinding',
+//                  credentialsId: 'aws-creds']
+//             ]) {
 
-                sh """
-                aws ecs register-task-definition \
-                --region us-east-1 \
-                --cli-input-json file://ecs/task.json
-                """
-            }
-        }
-    }
-}
-stage('Deploy to ECS') {
-    steps {
-        script {
-            withCredentials([
-                [$class: 'AmazonWebServicesCredentialsBinding',
-                 credentialsId: 'aws-creds']
-            ]) {
+//                 sh """
+//                 aws ecs register-task-definition \
+//                 --region us-east-1 \
+//                 --cli-input-json file://ecs/task.json
+//                 """
+//             }
+//         }
+//     }
+// }
 
-                sh """
-                aws ecs update-service \
-                  --region us-east-1 \
-                  --cluster wandarlust \
-                  --service wandarlust-service-8jkwt2wa \
-                  --task-definition wandarlust
-                """
-            }
-        }
-    }
-}
+
+// stage('Deploy to ecs') {
+//     steps {
+//         script {
+//              withCredentials([
+//                 [$class: 'AmazonWebServicesCredentialsBinding',
+//                  credentialsId: 'aws-creds']
+//             ]) {
+//             if (params.DEPLOY_MODE == 'CREATE') {
+
+//                 echo "Creating a new ECS Service..."
+
+//                 sh '''
+//                 aws ecs create-service \
+//                     --region us-east-1 \
+//                     --cluster wandarlust \
+//                     --service-name wandarlust-service \
+//                     --task-definition wandarlust \
+//                     --desired-count 2 \
+//                     --launch-type FARGATE \
+//                     --network-configuration "awsvpcConfiguration={subnets=[subnet-1,subnet-2],securityGroups=[sg-123],assignPublicIp=DISABLED}" \
+//                     --load-balancers targetGroupArn=arn:aws:elasticloadbalancing:xxxxxxxxxxxxxxxx,containerName=nginx,containerPort=80
+//                 '''
+
+//             } else {
+
+//                 echo "Updating existing ECS Service..."
+
+//                 sh '''
+//                 aws ecs update-service \
+//                     --region us-east-1 \
+//                     --cluster wandarlust-api-prod-cluster \
+//                     --service wandarlust-service \
+//                     --task-definition wandarlust
+//                 '''
+
+//             }
+//             }
+
+//         }
+//     }
+// }
+// // stage('Deploy to ECS') {
+// //     steps {
+// //         script {
+// //             withCredentials([
+// //                 [$class: 'AmazonWebServicesCredentialsBinding',
+// //                  credentialsId: 'aws-creds']
+// //             ]) {
+
+// //                 sh """
+// //                 aws ecs update-service \
+// //                   --region us-east-1 \
+// //                   --cluster wandarlust \
+// //                   --service wandarlust-service-8jkwt2wa \
+// //                   --task-definition wandarlust
+// //                 """
+// //             }
+// //         }
+// //     }
+// // }
+// stage('DAST - OWASP ZAP') {
+//     when {
+//         expression { params.DEPLOY_ENV != "production" }
+//     }
+
+//     steps {
+
+//         sh '''
+//         docker run --rm \
+//           -t ghcr.io/zaproxy/zaproxy:stable \
+//           zap-baseline.py \
+//           -t http://YOUR-STAGING-URL
+//         '''
+//     }
+// }
 
 stage('Production Approval') {
     when {
