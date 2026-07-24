@@ -13,7 +13,7 @@ services:
       - "8000:8000"
     environment:
       - MONGODB_URI=mongodb+srv://atiyaali652_db_user:Simplicity%40321@cluster0.qaf2f92.mongodb.net/wanderlust?appName=Cluster0
-      - REDIS_URL=redis://wandarlust-cache-cegark.serverless.use1.cache.amazonaws.com:6379
+      - REDIS_URL=rediss://wandarlust-cache-cegark.serverless.use1.cache.amazonaws.com:6379
     # env_file:
     #   - ./backend/.eanv
     # depends_on:
