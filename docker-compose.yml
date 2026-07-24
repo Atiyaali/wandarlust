@@ -16,7 +16,7 @@ services:
       - REDIS_URL=redis://wandarlust-cache-cegark.serverless.use1.cache.amazonaws.com:6379
     # env_file:
     #   - ./backend/.eanv
-    depends_on:
+    # depends_on:
       # - mongodb
       # - redis
     networks:
@@ -73,9 +73,9 @@ services:
     networks:
       - wanderlust-network
 
-volumes:
-  mongodb-data:
-  redis-data:
+# volumes:
+#   mongodb-data:
+#   redis-data:
 
 networks:
   wanderlust-network:
