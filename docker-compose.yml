@@ -13,12 +13,12 @@ services:
       - "8000:8000"
     environment:
       - MONGODB_URI=mongodb+srv://atiyaali652_db_user:Simplicity%40321@cluster0.qaf2f92.mongodb.net/wanderlust?appName=Cluster0
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://wandarlust-cache-cegark.serverless.use1.cache.amazonaws.com:6379
     # env_file:
     #   - ./backend/.eanv
     depends_on:
       # - mongodb
-      - redis
+      # - redis
     networks:
       - wanderlust-network
 
@@ -32,15 +32,15 @@ services:
   #   networks:
   #     - wanderlust-network
 
-  redis:
-    image: redis:latest
-    container_name: redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    networks:
-      - wanderlust-network
+  # redis:
+    # image: redis:latest
+    # container_name: redis
+    # ports:
+    #   - "6379:6379"
+    # volumes:
+    #   - redis-data:/data
+    # networks:
+    #   - wanderlust-network
 
   frontend:
     build:
