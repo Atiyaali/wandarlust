@@ -3,34 +3,34 @@ version: "3.9"
 services:
 
   backend:
-    # build:
-    #   context: ./backend
+    build:
+      context: ./backend
     # image: atiyadocker/wanderlust-backend:${SHA:-latest}
-    image: atiyadocker/wandarlustbackpipeline:${VERSION}
+    # image: atiyadocker/wandarlustbackpipeline:${VERSION}
 
     container_name: backend
     ports:
       - "8000:8000"
     environment:
-      - MONGODB_URI=mongodb://mongodb:27017/wanderlust
+      - MONGODB_URI=mongodb+srv://atiyaali652_db_user:Simplicity%40321@cluster0.qaf2f92.mongodb.net/wanderlust?appName=Cluster0
       - REDIS_URL=redis://redis:6379
     # env_file:
-    #   - ./backend/.env
+    #   - ./backend/.eanv
     depends_on:
-      - mongodb
+      # - mongodb
       - redis
     networks:
       - wanderlust-network
 
-  mongodb:
-    image: mongo:7.0.34-jammy
-    container_name: mongodb
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb-data:/data/db
-    networks:
-      - wanderlust-network
+  # mongodb:
+  #   image: mongo:7.0.34-jammy
+  #   container_name: mongodb
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongodb-data:/data/db
+  #   networks:
+  #     - wanderlust-network
 
   redis:
     image: redis:latest
@@ -43,13 +43,13 @@ services:
       - wanderlust-network
 
   frontend:
-    # build:
-    #   context: ./frontend
+    build:
+      context: ./frontend
     # image: atiyadocker/wanderlust-frontend:${SHA:-latest}
-    image: atiyadocker/wandarlustfrontpipeline:${VERSION}
+    # image: atiyadocker/wandarlustfrontpipeline:${VERSION}
     container_name: frontend
     environment:
-      - VITE_API_PATH=/api
+      - VITE_API_PATH=
     ports:
       - "5173:5173"
     depends_on:
@@ -57,10 +57,10 @@ services:
     networks:
       - wanderlust-network
   nginx:
-    # build:
-    #   context: ./nginx
+    build:
+      context: ./nginx
     # image: atiyadocker/wanderlust-nginx:${SHA:-latest}
-    image: atiyadocker/wandarlustnginxpipeline:${VERSION}
+    # image: atiyadocker/wandarlustnginxpipeline:${VERSION}
     container_name: nginx
     volumes:
       - ./nginx/ssl:/etc/nginx/ssl:ro

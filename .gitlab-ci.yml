@@ -1,0 +1,98 @@
+# .gitlab-ci.yml
+
+# All jobs will run on self-hosted runners with tag 'majlis'
+default:
+  tags:
+    - majlis
+  before_script:
+    - apk add --no-cache aws-cli
+    - export DOCKER_BUILDKIT=1        # Enable BuildKit for faster builds
+
+variables:                            # Global environment variables
+  AWS_REGION: "ap-south-1"            # AWS region
+  AWS_ACCOUNT_ID: "405634363888"      # AWS account ID
+  NAMESPACE: "majlis-prod-api-ns"     # ECR, ECS Namespace ID
+  ECR_REGISTRY: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com" # ECR registry URI
+  ECR_REPOSITORY: "${NAMESPACE}/${CI_PROJECT_NAME}" # Use GitLab project name as ECR repo name
+  ECS_CLUSTER: "majlis-prod-api-ecs-cluster"  # ECS cluster name
+  ECS_SERVICE: "${CI_PROJECT_NAME}-service"   # ECS service name derived from repo
+  TASK_FAMILY: "${CI_PROJECT_NAME}-task"      # ECS task definition family
+  IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"           # Use short commit SHA as image tag
+
+pipeline:
+
+  rules:
+    - if: "$CI_COMMIT_BRANCH == 'prod'"
+    - if: "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == 'prod'"
+
+  cache:                             
+    key: "${CI_PROJECT_DIR}"          
+    untracked: true
+    paths:
+      - task-arn.txt                 
+      - package*.json              
+
+  script:
+    # --- Validate ---
+    - aws --version                 # Confirm AWS CLI is installed
+    - docker --version              # Confirms docker availability
+    - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY || (echo "ECR login failed"; exit 1)
+    # - sonar-scanner || echo "SonarQube scan optional"     # config read from .properties file
+    # --- Build ---
+    - cp -v "$ENV" .env                                                   # take the file‐type CI variable env and make it as .env
+    - docker build -t ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG} .    # Building docker image along with .env passed to docker
+    - docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}          # Docker image pushed to ECR repo
+    - |
+      # --- Service-specific config ---
+      case "$CI_PROJECT_NAME" in
+        majlis_comment_microservice)
+          PORT=5005
+          TARGET_GROUP_ARN="arn:aws:elasticloadbalancing:ap-south-1:405634363888:targetgroup/majlis-comment-tg/11500eef8207d5d2"
+          ;;
+        *)
+          echo "Unknown service"
+          exit 1
+          ;;
+      esac
+    # Updating ECS task definition, Only register task definition if changed (uses cached task-arn.txt)
+    - >
+      if [ ! -f task-arn.txt ] || 
+         [ "$(aws ecs describe-task-definition --task-definition $TASK_FAMILY --query 'taskDefinition.containerDefinitions[0].image' --output text)" != "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}" ]; then
+        aws ecs register-task-definition --family ${TASK_FAMILY} --network-mode awsvpc --requires-compatibilities FARGATE --cpu 256 --memory 512 --execution-role-arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/ecsTaskExecutionRole --task-role-arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/ecsTaskExecutionRole --container-definitions "[{\"name\":\"${CI_PROJECT_NAME}\",\"image\":\"${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}\",\"portMappings\":[{\"containerPort\":${PORT},\"protocol\":\"tcp\"}],\"logConfiguration\":{\"logDriver\":\"awslogs\",\"options\":{\"awslogs-group\":\"/ecs/${TASK_FAMILY}\",\"awslogs-region\":\"${AWS_REGION}\",\"awslogs-stream-prefix\":\"ecs\"}}}]" --query 'taskDefinition.taskDefinitionArn' --output text > task-arn.txt
+      fi
+    - cat task-arn.txt         # Save & Check task ARN to file
+
+    # --- Deploy ---
+    # Check for ECS service exists and update service if needed
+    - >
+      if ! aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" --query "services[?status=='ACTIVE'] | length(@)" --output text | grep -q '^1$'; then
+        echo "Service does not exist or is not active. Creating new service...";
+        aws ecs create-service --cluster "$ECS_CLUSTER" --service-name "$ECS_SERVICE" --task-definition "$(cat task-arn.txt)" --desired-count 1 --launch-type FARGATE --network-configuration "awsvpcConfiguration={subnets=[subnet-001f47b6e7afd4f4d,subnet-0c343074f08705445],securityGroups=[sg-0fbb45e9e2435c159],assignPublicIp=DISABLED}" --load-balancers "targetGroupArn=${TARGET_GROUP_ARN},containerName=${CI_PROJECT_NAME},containerPort=${PORT}" --scheduling-strategy REPLICA --deployment-controller "type=ECS" --enable-ecs-managed-tags --propagate-tags SERVICE --disable-execute-command --service-connect-configuration '{"enabled":true,"namespace":"'"$NAMESPACE"'"}' --health-check-grace-period-seconds 60 --deployment-configuration "maximumPercent=200,minimumHealthyPercent=0,deploymentCircuitBreaker={enable=true,rollback=true}";
+      else
+        echo "Active service exists. Checking if update is needed...";
+        if [ -f task-arn.txt ] && [ "$(aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" --query 'services[0].taskDefinition' --output text)" != "$(cat task-arn.txt)" ]; then
+        aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" --task-definition "$(cat task-arn.txt)" --force-new-deployment;
+        fi;
+      fi
+
+    # One-time scaling setup (runs only if scaling policy doesn't exist)
+    # - >
+    #   if ! aws application-autoscaling describe-scaling-policies --service-namespace ecs --resource-id service/$ECS_CLUSTER/$ECS_SERVICE --query "ScalingPolicies[?PolicyName=='cpu-scaling'].PolicyName" --output text | grep -q cpu-scaling; then
+    #     echo "Register the scalable target (min 1, max 10 tasks)";
+    #     aws application-autoscaling register-scalable-target --service-namespace ecs --resource-id service/$ECS_CLUSTER/$ECS_SERVICE --scalable-dimension ecs:service:DesiredCount --min-capacity 1 --max-capacity 10 --suspended-state DynamicScalingInSuspended=true,DynamicScalingOutSuspended=true,ScheduledScalingSuspended=true;
+    #     echo "Create the CPU-utilization target-tracking policy";
+    #     aws application-autoscaling put-scaling-policy --service-namespace ecs --resource-id service/$ECS_CLUSTER/$ECS_SERVICE --scalable-dimension ecs:service:DesiredCount --policy-name cpu-scaling --policy-type TargetTrackingScaling --target-tracking-scaling-policy-configuration '{"TargetValue":70.0,"PredefinedMetricSpecification":{"PredefinedMetricType":"ECSServiceAverageCPUUtilization"},"ScaleOutCooldown":60,"ScaleInCooldown":300}';
+    #   fi
+
+    - echo "Cleanup"           # Running cleanup task on server
+    - docker system prune --filter "until=72h" -af
+ 
+  artifacts:
+    paths:
+      - task-arn.txt           # artifact ECS Task ARN cache
+      - package*.json           # artifact pacakge and lock files for speed
+    expire_in: 120h            # artifact retention duration
+
+
+    how to enabale autoscalling in this pipeline 
+    how to decrease down time to zero  when new deployment starts, mneans k jab me pipeline runn kron to pehly wali services chjalti rhy un till new services taks ready to deploye so deploy time become zero 

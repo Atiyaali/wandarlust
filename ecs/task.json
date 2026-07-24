@@ -6,7 +6,7 @@
     "containerDefinitions": [
       {
         "name": "frontend",
-        "image": "590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:15",
+        "image": "590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:1",
         "cpu": 1024,
         "memory": 1024,
         "memoryReservation": 1024,

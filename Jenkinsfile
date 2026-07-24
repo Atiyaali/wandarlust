@@ -1,374 +1,232 @@
-library(
-    identifier: 'jenkins_SL_project@main',
-    retriever: modernSCM(
-        [$class: 'GitSCMSource',
-         remote: 'https://github.com/Atiyaali/jenkins_shared_library.git',
-         credentialsId: 'jenkins_github']
-    )
-)
-pipeline { 
-    agent any
+pipeline {
+    agent { label 'majlis' }
 
     environment {
-        SONAR_HOST_URL=http://54.12.34.56:9000
-        MONGODB_URI = "mongodb://mongo:27017/wanderlust"
-        REDIS_URL   = "redis://redis:6379"
-      
-         }
-    parameters {
-    choice(name: 'DEPLOY_ENV', choices: ['dev', 'staging', 'production'], description: 'Environment')
-     choice(
-        name: 'DEPLOY_MODE',
-        choices: ['UPDATE', 'CREATE'],
-        description: 'Choose whether to create a new ECS service or update an existing one.'
-    )
-}
+        AWS_REGION      = "ap-south-1"
+        AWS_ACCOUNT_ID  = "405634363888"
+        NAMESPACE       = "Wandarlusr-prod"
+
+        ECR_REGISTRY    = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        ECR_REPOSITORY  = "${NAMESPACE}/${JOB_NAME}"
+
+        ECS_CLUSTER     = "majlis-prod-api-ecs-cluster"
+        ECS_SERVICE     = "${JOB_NAME}-service"
+        TASK_FAMILY     = "${JOB_NAME}-task"
+
+        IMAGE_TAG       = "${env.GIT_COMMIT.take(7)}"
+    }
+       parameters {
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['development', 'testing', 'production'],
+            description: 'Select deployment environment'
+        )
+    }
+
     stages {
+        stage('SonarQube Scan') {
 
-stage('get version'){
-    steps{
-    script{
-    if (params.DEPLOY_ENV == "production" ){
-        sh 'git fetch --tags'
-        env.VERSION = sh( 
-        script: 'git describe --tags',
-        returnStdout: true
-        ).trim()}
-    else {
-        env.VERSION  = env.BUILD_NUMBER
-        }
-        }
-        }
-    }
-stage("install dependencies"){
-parallel{
-stage('Install Backend') {
-  steps {
-    dir('backend') {
-      sh 'npm ci'
-    }
-  }
-}
-// stage('Install Frontend') {
-//   steps {
-//     dir('frontend') {
-//       sh 'npm ci'
-//     }
-//   }
-// }
-        }
-    }
-
-stage("linting"){
-parallel{
-stage('Lint Backend') {
-  steps {
-    dir('backend') {
-      sh 'npm run lint'
-    }
-  }
-}
-// stage('Lint Frontend') {
-//     steps {
-//         dir('frontend') {
-//             sh 'npm run lint'
-//         }
-//     }
-// }
-}
-}
-// stage("testing"){
-// parallel{
-// stage('Test backend') {
-//   steps {
-//     dir('backend') {
-//         sh 'npm test -- --detectOpenHandles --runInBand'
-//     }
-//     echo 'Backend TEST STAGE FINISHED'
-//   }
-// }
-// stage('Test frontend') {
-//   steps {
-//     dir('frontend') {
-//         sh 'npm test -- --detectOpenHandles --runInBand'
-//     }
-//     echo 'Frontend TEST STAGE FINISHED'
-//   }
-// }
-//     }
-// }
-
-// stage('SAST - SonarQube Scan') {
-//     steps {
-//         dir('backend') {
-//             withSonarQubeEnv('SonarQube') {
-//                 sh '''
-//                 npm install
-//                 npx sonar-scanner \
-//                   -Dsonar.projectKey=wanderlust \
-//                   -Dsonar.sources=. \
-//                   -Dsonar.host.url=$SONAR_HOST_URL \
-//                   -Dsonar.login=$SONAR_AUTH_TOKEN
-//                 '''
-//             }
-//         }
-//     }
-// }
-stage("build docker image"){
-parallel{
-stage('build front image') {    
     steps {
-               script{
-                // build ("atiyadocker/wandarlustfrontpipeline:${env.VERSION}","frontend/Dockerfile") 
-                build ("590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:${env.VERSION}","frontend/Dockerfile") 
 
+        withSonarQubeEnv('SonarQube') {
 
-               }
-            }
-}
-stage('build back image') {    
-    steps {
-               script{
-                build ("590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:${env.VERSION}","backend/Dockerfile") 
-                // build ("atiyadocker/wandarlustbackpipeline:${env.VERSION}","backend/Dockerfile") 
-               }
-            }
-}
-stage('build nginx image') {    
-    steps {
-    script{
-                build ("590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustnginxpipeline:${env.VERSION}" ,"nginx/Dockerfile") 
-                // build ("atiyadocker/wandarlustnginxpipeline:${env.VERSION}" ,"nginx/Dockerfile") 
-               }
-            }
-}
+            sh '''
+
+            sonar-scanner \
+            -Dsonar.projectKey=wanderlust \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=$SONAR_HOST_URL \
+            -Dsonar.login=$SONAR_AUTH_TOKEN
+
+            '''
+
+        }
+
     }
+
 }
 
+stage('Quality Gate') {
 
-//  stage('Security Scan frontend image') {
-//     steps {
-//        script{
-//         trivyscan("atiyadocker/wandarlustfrontpipeline:${env.VERSION}")
-//           echo 'Frontend image scan completed successfully'
-//        }
+    steps {
 
-      
-//     }
-// }
-// stage('Security Scan backend image') {
-//     steps {
-//       script{
-//         trivyscan("atiyadocker/wandarlustbackpipeline:${env.VERSION}")
-//           echo 'Backend image scan completed successfully'
-//       }
+        timeout(time: 5, unit: 'MINUTES') {
 
-      
-//     }
-// }
-//  stage('Security Scan nginx image') {
-//     steps {
-//        script{
-//         trivyscan("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
-//         echo 'nginx image scan completed successfully'
-//       }
-        
-//     }
-// }
+            waitForQualityGate abortPipeline: true
 
-stage('login ') {
+        }
+
+    }
+
+}
+
+        stage('Validate') {
             steps {
-            script{  
-                
-            dockerlogin()
-         
-            echo "pushing through SL"
-                  }
-            }
-}
-         
-stage("push docker image"){
-    parallel{
-     stage("push back image"){
-        steps{
-script{
-    //  push("atiyadocker/wandarlustbackpipeline:${env.VERSION}")
-    pushcsr("590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:${env.VERSION}")
-    
-}
-        }
-     
-     }   
-stage("push front image"){
-        steps{
-            script{
-//  push("atiyadocker/wandarlustfrontpipeline:${env.VERSION}")
- pushcsr("590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:${env.VERSION}")
+                sh '''
+                aws --version
+                docker --version
+
+                aws ecr get-login-password --region $AWS_REGION \
+                  | docker login \
+                    --username AWS \
+                    --password-stdin \
+                    $ECR_REGISTRY
+                '''
             }
         }
-    
-     } 
-stage("push nginx image"){
-        steps{
-            script{
-//   push("atiyadocker/wandarlustnginxpipeline:${env.VERSION}")
-  pushcsr("590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustnginxpipeline:${env.VERSION}")
+
+        stage('Build') {
+            steps {
+                sh '''
+                cp $ENV .env
+
+                docker build \
+                  -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+
+                docker push \
+                  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+                '''
             }
         }
-   
-     } 
-    }
-}
-
-// stage('Update ECS Task Definition') {
-//     steps {
-//         script {
-//             sh """
-//             sed -i 's#wandarlustfrontpipeline:[^"]*#wandarlustfrontpipeline:${BUILD_NUMBER}#' ecs/task.json
-
-//             sed -i 's#wandarlustbackpipeline:[^"]*#wandarlustbackpipeline:${BUILD_NUMBER}#' ecs/task.json
-             
-//             sed -i 's#wandarlustbackpipeline:[^"]*#wandarlustnginxpipeline:${BUILD_NUMBER}#' ecs/task.json
-
-
-//             """
-//         }
-//     }
-// }
-// stage('Debug JSON') {
-//     steps {
-//         sh 'cat ecs/task.json'
-//     }
-// }
-// stage('Register Task Definition') {
-//     steps {
-//         script {
-//             withCredentials([
-//                 [$class: 'AmazonWebServicesCredentialsBinding',
-//                  credentialsId: 'aws-creds']
-//             ]) {
-
-//                 sh """
-//                 aws ecs register-task-definition \
-//                 --region us-east-1 \
-//                 --cli-input-json file://ecs/task.json
-//                 """
-//             }
-//         }
-//     }
-// }
-
-
-// stage('Deploy to ecs') {
-//     steps {
-//         script {
-//              withCredentials([
-//                 [$class: 'AmazonWebServicesCredentialsBinding',
-//                  credentialsId: 'aws-creds']
-//             ]) {
-//             if (params.DEPLOY_MODE == 'CREATE') {
-
-//                 echo "Creating a new ECS Service..."
-
-//                 sh '''
-//                 aws ecs create-service \
-//                     --region us-east-1 \
-//                     --cluster wandarlust \
-//                     --service-name wandarlust-service \
-//                     --task-definition wandarlust \
-//                     --desired-count 2 \
-//                     --launch-type FARGATE \
-//                     --network-configuration "awsvpcConfiguration={subnets=[subnet-1,subnet-2],securityGroups=[sg-123],assignPublicIp=DISABLED}" \
-//                     --load-balancers targetGroupArn=arn:aws:elasticloadbalancing:xxxxxxxxxxxxxxxx,containerName=nginx,containerPort=80
-//                 '''
-
-//             } else {
-
-//                 echo "Updating existing ECS Service..."
-
-//                 sh '''
-//                 aws ecs update-service \
-//                     --region us-east-1 \
-//                     --cluster wandarlust-api-prod-cluster \
-//                     --service wandarlust-service \
-//                     --task-definition wandarlust
-//                 '''
-
-//             }
-//             }
-
-//         }
-//     }
-// }
-// // stage('Deploy to ECS') {
-// //     steps {
-// //         script {
-// //             withCredentials([
-// //                 [$class: 'AmazonWebServicesCredentialsBinding',
-// //                  credentialsId: 'aws-creds']
-// //             ]) {
-
-// //                 sh """
-// //                 aws ecs update-service \
-// //                   --region us-east-1 \
-// //                   --cluster wandarlust \
-// //                   --service wandarlust-service-8jkwt2wa \
-// //                   --task-definition wandarlust
-// //                 """
-// //             }
-// //         }
-// //     }
-// // }
-// stage('DAST - OWASP ZAP') {
-//     when {
-//         expression { params.DEPLOY_ENV != "production" }
-//     }
-
-//     steps {
-
-//         sh '''
-//         docker run --rm \
-//           -t ghcr.io/zaproxy/zaproxy:stable \
-//           zap-baseline.py \
-//           -t http://YOUR-STAGING-URL
-//         '''
-//     }
-// }
-
-stage('Production Approval') {
-    when {
-        expression { params.DEPLOY_ENV == "production" }
-    }
+       
+stage('Update Task Definition') {
     steps {
-        input message: "Deploy to PRODUCTION?"
+        sh '''
+        sed -i "s|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:.*|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustfrontpipeline:${BUILD_NUMBER}|g" ecs/task.json
+
+        sed -i "s|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:.*|590398356271.dkr.ecr.us-east-1.amazonaws.com/wandarlustbackpipeline:${BUILD_NUMBER}|g" ecs/task.json
+
+        cat ecs/task.json
+        '''
+    }
+}stage('Register Task Definition') {
+    steps {
+        sh '''
+        TASK_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://ecs/task.json \
+            --query "taskDefinition.taskDefinitionArn" \
+            --output text)
+
+        echo $TASK_ARN > task-arn.txt
+
+        echo "Registered Task Definition"
+
+        cat task-arn.txt
+        '''
     }
 }
-stage('Deploy') {
+
+
+stage('Deploy to ECS') {
+    steps {
+        sh '''
+        NEW_TASK=$(cat task-arn.txt)
+
+        aws ecs update-service \
+            --cluster wanderlust-cluster \
+            --service wanderlust-service \
+            --task-definition $NEW_TASK \
+            --force-new-deployment
+
+        aws ecs wait services-stable \
+            --cluster wanderlust-cluster \
+            --services wanderlust-service
+
+        echo "Deployment Completed"
+        '''
+    }
+}
+
+stage('Wait Until Stable') {
+    steps {
+        sh '''
+        aws ecs wait services-stable \
+            --cluster $ECS_CLUSTER \
+            --services $ECS_SERVICE
+        '''
+    }
+}
+
+stage('Configure Auto Scaling') {
+    steps {
+        sh '''
+        POLICY_EXISTS=$(aws application-autoscaling describe-scaling-policies \
+            --service-namespace ecs \
+            --resource-id service/$ECS_CLUSTER/$ECS_SERVICE \
+            --query "ScalingPolicies[?PolicyName=='cpu-scaling'].PolicyName" \
+            --output text)
+
+        if [ -z "$POLICY_EXISTS" ]; then
+
+            aws application-autoscaling register-scalable-target \
+                --service-namespace ecs \
+                --resource-id service/$ECS_CLUSTER/$ECS_SERVICE \
+                --scalable-dimension ecs:service:DesiredCount \
+                --min-capacity 1 \
+                --max-capacity 10
+
+            aws application-autoscaling put-scaling-policy \
+                --service-namespace ecs \
+                --resource-id service/$ECS_CLUSTER/$ECS_SERVICE \
+                --scalable-dimension ecs:service:DesiredCount \
+                --policy-name cpu-scaling \
+                --policy-type TargetTrackingScaling \
+                --target-tracking-scaling-policy-configuration '{
+                    "TargetValue":70,
+                    "PredefinedMetricSpecification":{
+                        "PredefinedMetricType":"ECSServiceAverageCPUUtilization"
+                    },
+                    "ScaleOutCooldown":60,
+                    "ScaleInCooldown":300
+                }'
+
+        else
+            echo "Auto Scaling already configured."
+        fi
+        '''
+    }
+}
+
+
+stage('OWASP ZAP') {
+
     when {
         expression {
-            params.DEPLOY_ENV == "production"
+            params.ENVIRONMENT == 'testing'
         }
     }
-            steps {
-              script{
-              deploy()
-              }
-            }
-        }
-      
+
+    steps {
+        sh '''
+        docker run --rm \
+          -v $(pwd):/zap/wrk/:rw \
+          ghcr.io/zaproxy/zaproxy:stable \
+          zap-baseline.py \
+          -t https://wandarlust.com \
+          -r zap-report.html
+        '''
     }
 
     post {
         always {
-            echo 'Pipeline finished'
-        }
-
-        success {
-            echo 'Pipeline succeeded'
-        }
-
-        failure {
-            echo 'Pipeline failed'
+            archiveArtifacts 'zap-report.html'
         }
     }
+}
+        stage('Cleanup') {
+            steps {
+                sh 'docker system prune -af --filter "until=72h"'
+            }
+        }
+    }
+
+ post {
+
+    always {
+
+        archiveArtifacts 'report.html'
+
+    }
+
+}
 }
