@@ -77,7 +77,7 @@ jobs:
           -f nginx/Dockerfile \
           -t atiyaali/wanderlust-nginx:${{ github.sha }} \
           -t atiyaali/wanderlust-nginx:latest \
-          .
+          nginx
 
       - name: Trivy scan frontend image
         run: |
