@@ -61,7 +61,7 @@ jobs:
           -f backend/Dockerfile \
           -t atiyaali/wanderlust-backend:${{ github.sha }} \
           -t atiyaali/wanderlust-backend:latest \
-          .
+          backend
       
       - name: Build Frontend Image
         run: |
@@ -69,7 +69,7 @@ jobs:
           -f frontend/Dockerfile \
           -t atiyaali/wanderlust-frontend:${{ github.sha }} \
           -t atiyaali/wanderlust-frontend:latest \
-          .
+          frontend
 
       - name: Build Nginx Image
         run: |
