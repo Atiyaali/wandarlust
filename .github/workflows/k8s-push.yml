@@ -164,7 +164,6 @@ jobs:
             kubectl apply -f Backend.yaml
             kubectl apply -f frontend.yaml
             kubectl apply -f nginx.yaml
-            kubectl apply -f dashboard-ingress.yaml
 
             # Verify rollout status for key deployments
             kubectl rollout status deployment/backend-deployment || kubectl rollout status deployment/backend

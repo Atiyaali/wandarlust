@@ -36,7 +36,7 @@ spec:
       - name: my-docker-key
       containers:
         - name: wandarlust-nginx
-          image: 972011045435.dkr.ecr.us-east-1.amazonaws.com/wandarlust-nginx
+          image: atiyaali/wanderlust-nginx
           imagePullPolicy: Always
           ports:
             - containerPort: 80

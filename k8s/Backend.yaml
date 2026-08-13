@@ -48,7 +48,7 @@ spec:
       - name: my-docker-key
       containers:
         - name: wandarlust-backend
-          image: 972011045435.dkr.ecr.us-east-1.amazonaws.com/wandarlust-backend
+          image: atiyaali/wanderlust-backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
