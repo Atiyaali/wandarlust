@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  # namespace: wandarlust-namespace
+  labels:
+    app: wandarlust-nginx
+
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http
+  selector:
+    app: wandarlust-nginx
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  # namespace: wandarlust-namespace
+  labels:
+    app: wandarlust-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wandarlust-nginx
+  template:
+    metadata:
+      labels:
+        app: wandarlust-nginx
+    spec:
+      imagePullSecrets:
+      - name: my-docker-key
+      containers:
+        - name: wandarlust-nginx
+          image: 972011045435.dkr.ecr.us-east-1.amazonaws.com/wandarlust-nginx
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "128Mi"
