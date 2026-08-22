@@ -5,3 +5,7 @@ containerPort: 80
 servicePort: 80
 serviceType: LoadBalancer
 replicaCount: 1
+serviceAnnotations:
+  service.beta.kubernetes.io/aws-load-balancer-type: "external"
+  service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+  service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
