@@ -124,7 +124,7 @@ jobs:
           docker push atiyaali/wanderlust-nginx:${{ github.sha }}
           docker push atiyaali/wanderlust-nginx:latest
 
-  deploy-minikube:
+  deploy-eks:
     needs: Docker
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
@@ -133,64 +133,39 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Deploy Manifests to Minikube on EC2
-        uses: appleboy/ssh-action@v1.0.3
+      # 1. Install Deployment Tools
+      - name: Install Deployment Tools
+        run: |
+          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+          chmod +x /usr/local/bin/yq
+          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          curl -L https://github.com/helmfile/helmfile/releases/download/v0.165.0/helmfile_0.165.0_linux_amd64.tar.gz | tar xz
+          sudo mv helmfile /usr/local/bin/
+          helm plugin install https://github.com/databus23/helm-diff
+
+      # 2. Update Image Tags specifically inside Helmcharts/values/
+      # Update Image Tags in Helm Values
+      - name: Update Image Tags in Helm Values
+        run: |
+          yq eval '.appVersion = "${{ github.sha }}"' -i Helmcharts/values/backendValues.yaml
+          yq eval '.appVersion = "${{ github.sha }}"' -i Helmcharts/values/frontendvalues.yaml
+          yq eval '.appVersion = "${{ github.sha }}"' -i Helmcharts/values/nginxvalues.yaml
+
+      # 3. Authenticate with AWS EKS
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            # Ensure minikube is running
-            minikube status || minikube start
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-            # Navigate to project directory on EC2 host (or pull latest repo changes)
-            cd ~/Documents/wanderlust/wandarlust
-            git pull origin ${{ github.ref_name }}
+      - name: Connect to AWS EKS
+        run: |
+          aws eks update-kubeconfig --region us-east-1 --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-            # Move to your Kubernetes manifests directory
-            cd k8s
-
-            # Update image tags dynamically in deployment files before applying
-            sed -i 's|atiyaali/wanderlust-backend:.*|atiyaali/wanderlust-backend:${{ github.sha }}|g' Backend.yaml
-            sed -i 's|atiyaali/wanderlust-frontend:.*|atiyaali/wanderlust-frontend:${{ github.sha }}|g' frontend.yaml
-            sed -i 's|atiyaali/wanderlust-nginx:.*|atiyaali/wanderlust-nginx:${{ github.sha }}|g' nginx.yaml
-
-            # Apply configuration secrets and databases first
-            kubectl apply -f docker-secret.yaml
-            kubectl apply -f DBconfig.yaml
-            kubectl apply -f Redisconfig.yaml
-
-            # Apply application workloads and ingress
-            kubectl apply -f Backend.yaml
-            kubectl apply -f frontend.yaml
-            kubectl apply -f nginx.yaml
-
-            # Verify rollout status for key deployments
-            kubectl rollout status deployment/backend-deployment || kubectl rollout status deployment/backend
-            kubectl rollout status deployment/frontend-deployment || kubectl rollout status deployment/frontend
-            kubectl rollout status deployment/nginx-deployment || kubectl rollout status deployment/nginx
-
-  # create-issue:
-  #   runs-on: ubuntu-latest
-  #   needs: [Docker, validate, deploy-minikube]
-  #   if: failure()
-  #   permissions:
-  #     issues: write
-  #   steps:
-  #     - name: Create Issue
-  #       uses: actions/github-script@v7
-  #       with:
-  #         script: |
-  #          await github.rest.issues.create({
-  #           owner: context.repo.owner,
-  #           repo: context.repo.repo,
-  #           title: 'CI/CD Pipeline Failed',
-  #           body: `
-  #           Workflow: ${context.workflow}
-  #           Commit: ${context.sha}
-  #           Branch: ${context.ref}
-
-  #           Check logs:
-  #           https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
-  #           `
-  #          })
+      # 4. Execute Helmfile inside the Helmcharts directory
+      - name: Helmfile Apply
+        working-directory: ./Helmcharts
+        run: |
+          helmfile diff
+          helmfile apply --atomic --wait --timeout 5m0s
