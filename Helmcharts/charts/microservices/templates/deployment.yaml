@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}
+  # namespace: wandarlust-namespace
+  labels:
+    app: {{ .Values.appName }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+    spec:
+      imagePullSecrets:
+      - name: my-docker-key
+      containers:
+        - name: {{ .Values.appName }}
+          image: "{{ .Values.appImage }}:{{ .Values.appVersion }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .Values.containerPort }}
+              name: http
+          env:
+          {{- range .Values.containerEnvVars }}
+          - name: {{ .name | quote }}
+            value: {{ .value | quote }}
+          {{- end }}
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "300m"
+              memory: "256Mi"
+      

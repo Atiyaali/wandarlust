@@ -1,0 +1,196 @@
+name: Docker Image CI/CD
+
+on: 
+  push:
+    branches: [main, staging]
+  pull_request: 
+    branches: [main, staging]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:6
+        ports:
+          - 27017:27017
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    env:
+      MONGODB_URI: mongodb://localhost:27017/wanderlust_test
+      REDIS_URL: redis://localhost:6379
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Installing Backend dependencies
+        run: |
+          cd backend
+          npm ci   
+
+      - name: Linting Backend
+        run: |
+          cd backend
+          npm run lint
+
+      - name: Testing backend
+        run: |
+          cd backend
+          npm test -- --detectOpenHandles --runInBand
+
+  Docker:
+    needs: validate
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Backend Image
+        run: |
+          docker build \
+          -f backend/Dockerfile \
+          -t atiyaali/wanderlust-backend:${{ github.sha }} \
+          -t atiyaali/wanderlust-backend:latest \
+          backend
+      
+      - name: Build Frontend Image
+        run: |
+          docker build \
+          -f frontend/Dockerfile \
+          -t atiyaali/wanderlust-frontend:${{ github.sha }} \
+          -t atiyaali/wanderlust-frontend:latest \
+          frontend
+
+      - name: Build Nginx Image
+        run: |
+          docker build \
+          -f nginx/Dockerfile \
+          -t atiyaali/wanderlust-nginx:${{ github.sha }} \
+          -t atiyaali/wanderlust-nginx:latest \
+          nginx
+
+      - name: Trivy scan frontend image
+        run: |
+          docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          aquasec/trivy:latest image \
+          --timeout 15m \
+          --scanners vuln \
+          --db-repository ghcr.io/aquasecurity/trivy-db \
+          atiyaali/wanderlust-frontend:${{ github.sha }}
+
+      - name: Trivy scan backend image
+        run: |
+          docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          aquasec/trivy:latest image \
+          --timeout 15m \
+          --scanners vuln \
+          --db-repository ghcr.io/aquasecurity/trivy-db \
+          atiyaali/wanderlust-backend:${{ github.sha }}
+
+      - name: Trivy scan nginx image
+        run: |
+          docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          aquasec/trivy:latest image \
+          --timeout 15m \
+          --scanners vuln \
+          --db-repository ghcr.io/aquasecurity/trivy-db \
+          atiyaali/wanderlust-nginx:${{ github.sha }}
+
+      - name: Push backend image
+        run: |
+          docker push atiyaali/wanderlust-backend:${{ github.sha }}
+          docker push atiyaali/wanderlust-backend:latest
+
+      - name: Push frontend image
+        run: |
+          docker push atiyaali/wanderlust-frontend:${{ github.sha }}
+          docker push atiyaali/wanderlust-frontend:latest
+
+      - name: Push nginx image
+        run: |
+          docker push atiyaali/wanderlust-nginx:${{ github.sha }}
+          docker push atiyaali/wanderlust-nginx:latest
+
+  deploy-minikube:
+    needs: Docker
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    environment: staging
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy Manifests to Minikube on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Ensure minikube is running
+            minikube status || minikube start
+
+            # Navigate to project directory on EC2 host (or pull latest repo changes)
+            cd ~/Documents/wanderlust/wandarlust
+            git pull origin ${{ github.ref_name }}
+
+            # Move to your Kubernetes manifests directory
+            cd k8s
+
+            # Update image tags dynamically in deployment files before applying
+            sed -i 's|atiyaali/wanderlust-backend:.*|atiyaali/wanderlust-backend:${{ github.sha }}|g' Backend.yaml
+            sed -i 's|atiyaali/wanderlust-frontend:.*|atiyaali/wanderlust-frontend:${{ github.sha }}|g' frontend.yaml
+            sed -i 's|atiyaali/wanderlust-nginx:.*|atiyaali/wanderlust-nginx:${{ github.sha }}|g' nginx.yaml
+
+            # Apply configuration secrets and databases first
+            kubectl apply -f docker-secret.yaml
+            kubectl apply -f DBconfig.yaml
+            kubectl apply -f Redisconfig.yaml
+
+            # Apply application workloads and ingress
+            kubectl apply -f Backend.yaml
+            kubectl apply -f frontend.yaml
+            kubectl apply -f nginx.yaml
+
+            # Verify rollout status for key deployments
+            kubectl rollout status deployment/backend-deployment || kubectl rollout status deployment/backend
+            kubectl rollout status deployment/frontend-deployment || kubectl rollout status deployment/frontend
+            kubectl rollout status deployment/nginx-deployment || kubectl rollout status deployment/nginx
+
+  # create-issue:
+  #   runs-on: ubuntu-latest
+  #   needs: [Docker, validate, deploy-minikube]
+  #   if: failure()
+  #   permissions:
+  #     issues: write
+  #   steps:
+  #     - name: Create Issue
+  #       uses: actions/github-script@v7
+  #       with:
+  #         script: |
+  #          await github.rest.issues.create({
+  #           owner: context.repo.owner,
+  #           repo: context.repo.repo,
+  #           title: 'CI/CD Pipeline Failed',
+  #           body: `
+  #           Workflow: ${context.workflow}
+  #           Commit: ${context.sha}
+  #           Branch: ${context.ref}
+
+  #           Check logs:
+  #           https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
+  #           `
+  #          })

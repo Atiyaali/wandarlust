@@ -1,0 +1,14 @@
+appName: backend
+appImage: atiyaali/wanderlust-backend
+appVersion: latest
+containerPort: 8000
+servicePort: 8000
+serviceType: ClusterIP
+replicaCount: 1
+containerEnvVars:
+        - name:  MONGODB_URI
+          value: "mongodb://admin:StrongPassword123!@mongodb-service:27017/wanderlust?authSource=admin"
+        - name: REDIS_URL
+          value: "redis://redis-service:6379"
+    
+     

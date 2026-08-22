@@ -1,0 +1,7 @@
+appName: nginx
+appImage: atiyaali/wanderlust-nginx
+appVersion: latest
+containerPort: 80
+servicePort: 80
+serviceType: LoadBalancer
+replicaCount: 1

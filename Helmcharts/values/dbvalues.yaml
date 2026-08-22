@@ -1,0 +1,6 @@
+appName: mongodb
+appImage: mongo
+appVersion: latest
+containerPort: 27017
+secretName: mongodb-secret
+servicePort: 27017

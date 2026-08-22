@@ -1,0 +1,26 @@
+releases:
+  - name: backend
+    chart: charts/microservices
+    values:
+      - values/backendvalues.yaml
+      - appReplicaCount: 1
+
+  - name: mongodb
+    chart: charts/mongo
+    values:
+      - values/dbvalues.yaml
+
+  - name: frontend
+    chart: charts/microservices
+    values:
+      - values/frontendvalues.yaml
+
+  - name: nginx
+    chart: charts/microservices
+    values:
+      - values/nginxvalues.yaml
+
+  - name: redis
+    chart: charts/redis
+    values:
+      - values/redisvalues.yaml

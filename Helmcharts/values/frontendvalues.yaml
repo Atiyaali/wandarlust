@@ -1,0 +1,10 @@
+appName: frontend
+appImage: atiyaali/wanderlust-frontend
+appVersion: latest
+containerPort: 5173
+servicePort: 5173
+serviceType: ClusterIP
+replicaCount: 1
+containerEnvVars:
+        - name:  VITE_API_PATH
+          value: ""

@@ -1,0 +1,7 @@
+appName: redis
+appImage: redis
+appVersion: alpine
+containerPort: 6379
+servicePort: 6379
+serviceType: ClusterIP
+replicaCount: 1
