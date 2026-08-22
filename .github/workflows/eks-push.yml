@@ -168,4 +168,4 @@ jobs:
         working-directory: ./Helmcharts
         run: |
           helmfile diff
-          helmfile apply --atomic --wait --timeout 5m0s
+          helmfile apply --wait --timeout 5m0s
