@@ -147,7 +147,7 @@ jobs:
       # Update Image Tags in Helm Values
       - name: Update Image Tags in Helm Values
         run: |
-          yq eval '.appVersion = "${{ github.sha }}"' -i Helmcharts/values/backendValues.yaml
+          yq eval '.appVersion = "${{ github.sha }}"' -i Helmcharts/values/backendvalues.yaml
           yq eval '.appVersion = "${{ github.sha }}"' -i Helmcharts/values/frontendvalues.yaml
           yq eval '.appVersion = "${{ github.sha }}"' -i Helmcharts/values/nginxvalues.yaml
 
