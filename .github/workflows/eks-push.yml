@@ -62,15 +62,11 @@ jobs:
           semgrep scan --config="p/javascript" --config="p/owasp-top-ten" --json -o semgrep-report.json ./backend || true
       - name: Upload Reports to DefectDojo using Python Script
         if: always()
-        env:
-          DEFECTDOJO_URL: ${{ secrets.DEFECTDOJO_URL }}
-          DEFECTDOJO_TOKEN: ${{ secrets.DEFECTDOJO_TOKEN }}
-          DEFECTDOJO_ENGAGEMENT_ID: ${{ secrets.DEFECTDOJO_ENGAGEMENT_ID }}
         run: |
           pip install requests
-          [ -f gitleaks-report.json ] && python upload-file.py gitleaks-report.json "Gitleaks Scan" || true
-          [ -f njsscan-report.json ] && python upload-file.py njsscan-report.json "njsscan" || true
-          [ -f semgrep-report.json ] && python upload-file.py semgrep-report.json "Semgrep JSON Report" || true
+          [ -f gitleaks-report.json ] && python upload-file.py gitleaks-report.json "Gitleaks Scan"
+          [ -f njsscan-report.json ] && python upload-file.py njsscan-report.json "njsscan"
+          [ -f semgrep-report.json ] && python upload-file.py semgrep-report.json "Semgrep JSON Report"
   # Docker:
   #   needs: validate
   #   runs-on: ubuntu-latest
