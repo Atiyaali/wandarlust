@@ -65,7 +65,7 @@ jobs:
         run: |
           pip install requests
           [ -f gitleaks-report.json ] && python upload-file.py gitleaks-report.json "Gitleaks Scan"
-          [ -f njsscan-report.json ] && python upload-file.py njsscan-report.json "njsscan"
+          [ -f njsscan-report.json ] && python upload-file.py njsscan-report.json "SARIF"
           [ -f semgrep-report.json ] && python upload-file.py semgrep-report.json "Semgrep JSON Report"
   # Docker:
   #   needs: validate
