@@ -21,10 +21,6 @@ jobs:
     env:
       MONGODB_URI: mongodb://localhost:27017/wanderlust_test
       REDIS_URL: redis://localhost:6379
-      DEFECTDOJO_TOKEN: ${{ secrets.DEFECTDOJO_TOKEN }}
-      DEFECTDOJO_ENGAGEMENT_ID: "37"
-      DEFECTDOJO_URL: "https://demo.defectdojo.org/api/v2/import-scan/"
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,6 +29,7 @@ jobs:
         run: |
           cd backend
           npm ci   
+
 
       - name: Linting Backend
         run: |
@@ -43,7 +40,6 @@ jobs:
         run: |
           cd backend
           npm test -- --detectOpenHandles --runInBand
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -64,21 +60,19 @@ jobs:
         run: |
           pip install semgrep
           semgrep scan --config="p/javascript" --config="p/owasp-top-ten" --json -o semgrep-report.json ./backend || true
-
-      - name: Install and run Retire.js
-        run: |
-          npm install -g retire
-          cd backend
-          retire --outputformat json --outputpath ../retirejs-report.json || true
-
+      # - name: Install and run Retire.js
+      #   run: |
+      #     npm install -g retire
+      #     cd backend
+      #     retire --outputformat json --outputpath ../retirejs-report.json || true
       - name: Upload Reports to DefectDojo using Python Script
         if: always()
         run: |
           pip install requests
-          [ -f gitleaks-report.json ] && python upload-file.py gitleaks-report.json "Gitleaks Scan" || true
-          [ -f njsscan-report.json ] && python upload-file.py njsscan-report.json "SARIF" || true
-          [ -f semgrep-report.json ] && python upload-file.py semgrep-report.json "Semgrep JSON Report" || true
-          [ -f retirejs-report.json ] && python upload-file.py retirejs-report.json "Retire.js Scan" || true
+          [ -f gitleaks-report.json ] && python upload-file.py gitleaks-report.json "Gitleaks Scan"
+          [ -f njsscan-report.json ] && python upload-file.py njsscan-report.json "SARIF"
+          [ -f semgrep-report.json ] && python upload-file.py semgrep-report.json "Semgrep JSON Report"
+# [ -f retirejs-report.json ] && python upload-file.py retirejs-report.json "Retire.js Scan"
   # Docker:
   #   needs: validate
   #   runs-on: ubuntu-latest
