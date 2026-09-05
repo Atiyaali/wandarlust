@@ -143,20 +143,21 @@ jobs:
       #     --db-repository ghcr.io/aquasecurity/trivy-db \
       #     atiyaali/wanderlust-nginx:${{ github.sha }}
 
-      - name: Push backend image
-        run: |
-          docker push atiyaali/wanderlust-backend:${{ github.sha }}
-          docker push atiyaali/wanderlust-backend:latest
+      # - name: Push backend image
+      #   run: |
+      #     docker push atiyaali/wanderlust-backend:${{ github.sha }}
+      #     docker push atiyaali/wanderlust-backend:latest
 
-      - name: Push frontend image
-        run: |
-          docker push atiyaali/wanderlust-frontend:${{ github.sha }}
-          docker push atiyaali/wanderlust-frontend:latest
+      # - name: Push frontend image
+      #   run: |
+      #     docker push atiyaali/wanderlust-frontend:${{ github.sha }}
+      #     docker push atiyaali/wanderlust-frontend:latest
 
       - name: Push nginx image
         run: |
-          docker push atiyaali/wanderlust-nginx:${{ github.sha }}
-          docker push atiyaali/wanderlust-nginx:latest
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 972011045435.dkr.ecr.us-east-1.amazonaws.com
+          docker tag atiyaali/wanderlust-nginx:${{ github.sha }} 972011045435.dkr.ecr.us-east-1.amazonaws.com/nginx:${{ github.sha }}
+          docker push 972011045435.dkr.ecr.us-east-1.amazonaws.com/nginx:${{ github.sha }}
 
   # deploy-eks:
   #   needs: Docker
