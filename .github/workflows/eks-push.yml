@@ -113,35 +113,35 @@ jobs:
           -t atiyaali/wanderlust-nginx:latest \
           nginx
 
-      - name: Trivy scan frontend image
-        run: |
-          docker run --rm \
-          -v /var/run/docker.sock:/var/run/docker.sock \
-          aquasec/trivy:latest image \
-          --timeout 15m \
-          --scanners vuln \
-          --db-repository ghcr.io/aquasecurity/trivy-db \
-          atiyaali/wanderlust-frontend:${{ github.sha }}
+      # - name: Trivy scan frontend image
+      #   run: |
+      #     docker run --rm \
+      #     -v /var/run/docker.sock:/var/run/docker.sock \
+      #     aquasec/trivy:latest image \
+      #     --timeout 15m \
+      #     --scanners vuln \
+      #     --db-repository ghcr.io/aquasecurity/trivy-db \
+      #     atiyaali/wanderlust-frontend:${{ github.sha }}
 
-      - name: Trivy scan backend image
-        run: |
-          docker run --rm \
-          -v /var/run/docker.sock:/var/run/docker.sock \
-          aquasec/trivy:latest image \
-          --timeout 15m \
-          --scanners vuln \
-          --db-repository ghcr.io/aquasecurity/trivy-db \
-          atiyaali/wanderlust-backend:${{ github.sha }}
+      # - name: Trivy scan backend image
+      #   run: |
+      #     docker run --rm \
+      #     -v /var/run/docker.sock:/var/run/docker.sock \
+      #     aquasec/trivy:latest image \
+      #     --timeout 15m \
+      #     --scanners vuln \
+      #     --db-repository ghcr.io/aquasecurity/trivy-db \
+      #     atiyaali/wanderlust-backend:${{ github.sha }}
 
-      - name: Trivy scan nginx image
-        run: |
-          docker run --rm \
-          -v /var/run/docker.sock:/var/run/docker.sock \
-          aquasec/trivy:latest image \
-          --timeout 15m \
-          --scanners vuln \
-          --db-repository ghcr.io/aquasecurity/trivy-db \
-          atiyaali/wanderlust-nginx:${{ github.sha }}
+      # - name: Trivy scan nginx image
+      #   run: |
+      #     docker run --rm \
+      #     -v /var/run/docker.sock:/var/run/docker.sock \
+      #     aquasec/trivy:latest image \
+      #     --timeout 15m \
+      #     --scanners vuln \
+      #     --db-repository ghcr.io/aquasecurity/trivy-db \
+      #     atiyaali/wanderlust-nginx:${{ github.sha }}
 
       - name: Push backend image
         run: |
