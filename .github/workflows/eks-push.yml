@@ -62,7 +62,7 @@ jobs:
           semgrep scan --config="p/javascript" --config="p/owasp-top-ten" --json -o semgrep-report.json ./backend || true
       - name: Install and run Retire.js
         run: |
-          npm install -g retire
+          sudo npm install -g retire
           cd backend
           retire --outputformat json --outputpath ../retirejs-report.json || true
       # - name: Upload Reports to DefectDojo using Python Script
