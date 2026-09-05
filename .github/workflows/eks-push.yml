@@ -60,6 +60,11 @@ jobs:
         run: |
           pip install semgrep
           semgrep scan --config="p/javascript" --config="p/owasp-top-ten" --json -o semgrep-report.json ./backend || true
+      - name: Install and run Retire.js
+        run: |
+          npm install -g retire
+          cd backend
+          retire --outputformat json --outputpath ../retirejs-report.json || true
       - name: Upload Reports to DefectDojo using Python Script
         if: always()
         run: |
@@ -67,6 +72,7 @@ jobs:
           [ -f gitleaks-report.json ] && python upload-file.py gitleaks-report.json "Gitleaks Scan"
           [ -f njsscan-report.json ] && python upload-file.py njsscan-report.json "SARIF"
           [ -f semgrep-report.json ] && python upload-file.py semgrep-report.json "Semgrep JSON Report"
+          [ -f retirejs-report.json ] && python upload-file.py retirejs-report.json "Retire.js Scan"
   # Docker:
   #   needs: validate
   #   runs-on: ubuntu-latest
