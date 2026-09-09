@@ -178,7 +178,7 @@ jobs:
           echo "Triggering deployment on EC2 via AWS Systems Manager..."
           
           aws ssm send-command \
-            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --instance-ids "i-00ae85b4683e66369" \
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
               "cd /home/ubuntu/wanderlust/wandarlust",
