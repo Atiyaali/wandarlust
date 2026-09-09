@@ -65,14 +65,14 @@ jobs:
           sudo npm install -g retire
           cd backend
           retire --outputformat json --outputpath ../retirejs-report.json || true
-      - name: Upload Reports to DefectDojo using Python Script
-        if: always()
-        run: |
-          pip install requests
-          [ -f gitleaks-report.json ] && python upload-file.py gitleaks-report.json "Gitleaks Scan"
-          [ -f retirejs-report.json ] && python upload-file.py retirejs-report.json "Retire.js Scan"
-          [ -f njsscan-report.json ] && python upload-file.py njsscan-report.json "SARIF"
-          [ -f semgrep-report.json ] && python upload-file.py semgrep-report.json "Semgrep JSON Report"
+      # - name: Upload Reports to DefectDojo using Python Script
+      #   if: always()
+      #   run: |
+      #     pip install requests
+      #     [ -f gitleaks-report.json ] && python upload-file.py gitleaks-report.json "Gitleaks Scan"
+      #     [ -f retirejs-report.json ] && python upload-file.py retirejs-report.json "Retire.js Scan"
+      #     [ -f njsscan-report.json ] && python upload-file.py njsscan-report.json "SARIF"
+      #     [ -f semgrep-report.json ] && python upload-file.py semgrep-report.json "Semgrep JSON Report"
           
   Docker:
     needs: validate
