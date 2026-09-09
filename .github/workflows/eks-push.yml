@@ -166,12 +166,12 @@ jobs:
     # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     # environment: staging
     steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+      # - name: Configure AWS Credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: us-east-1
 
       - name: Deploy via AWS SSM and Docker Compose
         run: |
@@ -181,7 +181,7 @@ jobs:
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
-              "cd /home/ubuntu/wanderlust",
+              "cd /home/ubuntu/wanderlust/wandarlust",
               "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 972011045435.dkr.ecr.us-east-1.amazonaws.com",
               "export IMAGE_TAG=${{ github.sha }}",
               "docker compose pull",
