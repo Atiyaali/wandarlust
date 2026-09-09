@@ -181,7 +181,7 @@ jobs:
             --instance-ids "i-00ae85b4683e66369" \
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
-              "cd /home/ubuntu/wanderlust/wandarlust",
+              "cd /home/ubuntu/wanderlust",
               "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 972011045435.dkr.ecr.us-east-1.amazonaws.com",
               "export IMAGE_TAG=${{ github.sha }}",
               "docker compose pull",
