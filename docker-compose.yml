@@ -3,17 +3,19 @@ version: "3.9"
 services:
 
   backend:
-    build:
-      context: ./backend
+    # build:
+    #   context: ./backend
     # image: atiyadocker/wanderlust-backend:${SHA:-latest}
     # image: atiyadocker/wandarlustbackpipeline:${VERSION}
-
-    container_name: backend
+    image: 972011045435.dkr.ecr.us-east-1.amazonaws.com/backend:${IMAGE_TAG:-latest}
+    container_name: wanderlust-backend
     ports:
       - "8000:8000"
     environment:
-      - MONGODB_URI=mongodb+srv://atiyaali652_db_user:Simplicity%40321@cluster0.qaf2f92.mongodb.net/wanderlust?appName=Cluster0
-      - REDIS_URL=rediss://wandarlust-cache-cegark.serverless.use1.cache.amazonaws.com:6379
+         - mongodb://mongodb:27017/wanderlust
+         - redis://redis:6379
+      # - MONGODB_URI=mongodb+srv://atiyaali652_db_user:Simplicity%40321@cluster0.qaf2f92.mongodb.net/wanderlust?appName=Cluster0
+      # - REDIS_URL=rediss://wandarlust-cache-cegark.serverless.use1.cache.amazonaws.com:6379
     # env_file:
     #   - ./backend/.eanv
     # depends_on:
@@ -22,32 +24,33 @@ services:
     networks:
       - wanderlust-network
 
-  # mongodb:
-  #   image: mongo:7.0.34-jammy
-  #   container_name: mongodb
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - mongodb-data:/data/db
-  #   networks:
-  #     - wanderlust-network
+  mongodb:
+    image: mongo:7.0.34-jammy
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - wanderlust-network
 
-  # redis:
-    # image: redis:latest
-    # container_name: redis
-    # ports:
-    #   - "6379:6379"
-    # volumes:
-    #   - redis-data:/data
-    # networks:
-    #   - wanderlust-network
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - wanderlust-network
 
   frontend:
-    build:
-      context: ./frontend
+    # build:
+    #   context: ./frontend
     # image: atiyadocker/wanderlust-frontend:${SHA:-latest}
     # image: atiyadocker/wandarlustfrontpipeline:${VERSION}
-    container_name: frontend
+    image: 972011045435.dkr.ecr.us-east-1.amazonaws.com/frontend:${IMAGE_TAG:-latest}
+    container_name: wanderlust-frontend
     environment:
       - VITE_API_PATH= /api
     ports:
@@ -57,11 +60,12 @@ services:
     networks:
       - wanderlust-network
   nginx:
-    build:
-      context: ./nginx
+    # build:
+    #   context: ./nginx
     # image: atiyadocker/wanderlust-nginx:${SHA:-latest}
     # image: atiyadocker/wandarlustnginxpipeline:${VERSION}
-    container_name: nginx
+    image: 972011045435.dkr.ecr.us-east-1.amazonaws.com/nginx:${IMAGE_TAG:-latest}
+    container_name: wanderlust-nginx
     # volumes:
     #   - ./nginx/ssl:/etc/nginx/ssl:ro
     ports:

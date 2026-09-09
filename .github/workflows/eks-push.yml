@@ -65,14 +65,14 @@ jobs:
           sudo npm install -g retire
           cd backend
           retire --outputformat json --outputpath ../retirejs-report.json || true
-      # - name: Upload Reports to DefectDojo using Python Script
-      #   if: always()
-      #   run: |
-      #     pip install requests
-      #     [ -f gitleaks-report.json ] && python upload-file.py gitleaks-report.json "Gitleaks Scan"
-      #     [ -f retirejs-report.json ] && python upload-file.py retirejs-report.json "Retire.js Scan"
-      #     [ -f njsscan-report.json ] && python upload-file.py njsscan-report.json "SARIF"
-      #     [ -f semgrep-report.json ] && python upload-file.py semgrep-report.json "Semgrep JSON Report"
+      - name: Upload Reports to DefectDojo using Python Script
+        if: always()
+        run: |
+          pip install requests
+          [ -f gitleaks-report.json ] && python upload-file.py gitleaks-report.json "Gitleaks Scan"
+          [ -f retirejs-report.json ] && python upload-file.py retirejs-report.json "Retire.js Scan"
+          [ -f njsscan-report.json ] && python upload-file.py njsscan-report.json "SARIF"
+          [ -f semgrep-report.json ] && python upload-file.py semgrep-report.json "Semgrep JSON Report"
           
   Docker:
     needs: validate
@@ -113,51 +113,82 @@ jobs:
           -t atiyaali/wanderlust-nginx:latest \
           nginx
 
-      # - name: Trivy scan frontend image
-      #   run: |
-      #     docker run --rm \
-      #     -v /var/run/docker.sock:/var/run/docker.sock \
-      #     aquasec/trivy:latest image \
-      #     --timeout 15m \
-      #     --scanners vuln \
-      #     --db-repository ghcr.io/aquasecurity/trivy-db \
-      #     atiyaali/wanderlust-frontend:${{ github.sha }}
+      - name: Trivy scan frontend image
+        run: |
+          docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          aquasec/trivy:latest image \
+          --timeout 15m \
+          --scanners vuln \
+          --db-repository ghcr.io/aquasecurity/trivy-db \
+          atiyaali/wanderlust-frontend:${{ github.sha }}
 
-      # - name: Trivy scan backend image
-      #   run: |
-      #     docker run --rm \
-      #     -v /var/run/docker.sock:/var/run/docker.sock \
-      #     aquasec/trivy:latest image \
-      #     --timeout 15m \
-      #     --scanners vuln \
-      #     --db-repository ghcr.io/aquasecurity/trivy-db \
-      #     atiyaali/wanderlust-backend:${{ github.sha }}
+      - name: Trivy scan backend image
+        run: |
+          docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          aquasec/trivy:latest image \
+          --timeout 15m \
+          --scanners vuln \
+          --db-repository ghcr.io/aquasecurity/trivy-db \
+          atiyaali/wanderlust-backend:${{ github.sha }}
 
-      # - name: Trivy scan nginx image
-      #   run: |
-      #     docker run --rm \
-      #     -v /var/run/docker.sock:/var/run/docker.sock \
-      #     aquasec/trivy:latest image \
-      #     --timeout 15m \
-      #     --scanners vuln \
-      #     --db-repository ghcr.io/aquasecurity/trivy-db \
-      #     atiyaali/wanderlust-nginx:${{ github.sha }}
+      - name: Trivy scan nginx image
+        run: |
+          docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          aquasec/trivy:latest image \
+          --timeout 15m \
+          --scanners vuln \
+          --db-repository ghcr.io/aquasecurity/trivy-db \
+          atiyaali/wanderlust-nginx:${{ github.sha }}
 
-      # - name: Push backend image
-      #   run: |
-      #     docker push atiyaali/wanderlust-backend:${{ github.sha }}
-      #     docker push atiyaali/wanderlust-backend:latest
+      - name: Push backend image
+        run: |
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 972011045435.dkr.ecr.us-east-1.amazonaws.com
+          docker tag atiyaali/wanderlust-backend:${{ github.sha }} 972011045435.dkr.ecr.us-east-1.amazonaws.com/backend:${{ github.sha }}
+          docker push 972011045435.dkr.ecr.us-east-1.amazonaws.com/backend:${{ github.sha }}
 
-      # - name: Push frontend image
-      #   run: |
-      #     docker push atiyaali/wanderlust-frontend:${{ github.sha }}
-      #     docker push atiyaali/wanderlust-frontend:latest
+      - name: Push frontend image
+        run: |
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 972011045435.dkr.ecr.us-east-1.amazonaws.com
+          docker tag atiyaali/wanderlust-frontend:${{ github.sha }} 972011045435.dkr.ecr.us-east-1.amazonaws.com/frontend:${{ github.sha }}
+          docker push 972011045435.dkr.ecr.us-east-1.amazonaws.com/frontend:${{ github.sha }}
 
       - name: Push nginx image
         run: |
           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 972011045435.dkr.ecr.us-east-1.amazonaws.com
           docker tag atiyaali/wanderlust-nginx:${{ github.sha }} 972011045435.dkr.ecr.us-east-1.amazonaws.com/nginx:${{ github.sha }}
           docker push 972011045435.dkr.ecr.us-east-1.amazonaws.com/nginx:${{ github.sha }}
+  deploy:
+    needs: Docker
+    runs-on: self-hosted
+    # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # environment: staging
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy via AWS SSM and Docker Compose
+        run: |
+          echo "Triggering deployment on EC2 via AWS Systems Manager..."
+          
+          aws ssm send-command \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=[
+              "cd /home/ubuntu/wanderlust",
+              "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 972011045435.dkr.ecr.us-east-1.amazonaws.com",
+              "export IMAGE_TAG=${{ github.sha }}",
+              "docker compose pull",
+              "docker compose up -d --remove-orphans"
+            ]' \
+            --comment "Deploying Wanderlust via Docker Compose and SSM" \
+            --output text
 
   # deploy-eks:
   #   needs: Docker
