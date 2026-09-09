@@ -77,9 +77,9 @@ services:
     networks:
       - wanderlust-network
 
-# volumes:
-#   mongodb-data:
-#   redis-data:
+volumes:
+  mongodb-data:
+  redis-data:
 
 networks:
   wanderlust-network:
