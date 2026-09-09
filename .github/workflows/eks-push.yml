@@ -193,12 +193,10 @@ jobs:
             --output text)
             
           echo "Command sent successfully. Command ID: $COMMAND_ID"
-          echo "Waiting for execution to complete on EC2..."
+          echo "Waiting 15 seconds for execution to complete on EC2..."
           
-          # 2. Wait for the SSM command to finish executing
-          aws ssm wait command-exec-completed \
-            --command-id "$COMMAND_ID" \
-            --instance-id "i-00ae85b4683e66369"
+          # 2. Sleep to allow the instance time to process the deployment
+          sleep 15
             
           echo "--- SSM Execution Output ---"
           
@@ -217,7 +215,6 @@ jobs:
             --instance-id "i-00ae85b4683e66369" \
             --query "StandardErrorContent" \
             --output text
-
   # deploy-eks:
   #   needs: Docker
   #   runs-on: ubuntu-latest
